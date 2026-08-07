@@ -683,15 +683,15 @@
       </a>
       <div class="nav-divider"></div>
       <div class="nav-section-label">Presence</div>
-      <a class="nav-item" data-view="pages" onclick="showView('pages');return false" href="#">
-        <span class="material-icons">web</span>Pages
-      </a>
       <a class="nav-item" data-view="listings" onclick="showView('listings');return false" href="#">
         <span class="material-icons">location_on</span>Listings
       </a>
       <a class="nav-item" data-view="reviews" onclick="showView('reviews');return false" href="#">
         <span class="material-icons">star_rate</span>Reviews
         <span class="badge" id="reviewsBadge" style="display:none">0</span>
+      </a>
+      <a class="nav-item" data-view="pages" onclick="showView('pages');return false" href="#">
+        <span class="material-icons">web</span>Pages
       </a>
       <div class="nav-divider"></div>
       <div class="nav-section-label">Account</div>
@@ -802,23 +802,14 @@
         </button>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="postFilterChips">
         <button class="chip chip-neutral" style="cursor:pointer;font-size:13px" onclick="filterPosts('all')">All posts</button>
-        <button class="chip" style="cursor:pointer;background:var(--blue-light);color:var(--blue);font-size:13px" onclick="filterPosts('GOOGLEMYBUSINESS')">
-          🔵 Google
-        </button>
-        <button class="chip" style="cursor:pointer;background:#e7f3ff;color:#1877f2;font-size:13px" onclick="filterPosts('FACEBOOK')">
-          📘 Facebook
-        </button>
-        <button class="chip" style="cursor:pointer;background:#fce4ec;color:#c2185b;font-size:13px" onclick="filterPosts('INSTAGRAM')">
-          📷 Instagram
-        </button>
-        <button class="chip" style="cursor:pointer;background:#f0f0f0;color:#010101;font-size:13px" onclick="filterPosts('TIKTOK')">
-          🎵 TikTok
-        </button>
-        <button class="chip" style="cursor:pointer;background:#e8f4f8;color:#0077b5;font-size:13px" onclick="filterPosts('LINKEDIN')">
-          💼 LinkedIn
-        </button>
+        <button class="chip" style="cursor:pointer;background:#fff3e0;color:#e65100;font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('FIRSTPARTY')" id="chip-FIRSTPARTY"></button>
+        <button class="chip" style="cursor:pointer;background:var(--blue-light);color:var(--blue);font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('GOOGLEMYBUSINESS')" id="chip-GOOGLEMYBUSINESS"></button>
+        <button class="chip" style="cursor:pointer;background:#e7f3ff;color:#1877f2;font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('FACEBOOK')" id="chip-FACEBOOK"></button>
+        <button class="chip" style="cursor:pointer;background:#fce4ec;color:#c2185b;font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('INSTAGRAM')" id="chip-INSTAGRAM"></button>
+        <button class="chip" style="cursor:pointer;background:#f0f0f0;color:#010101;font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('TIKTOK')" id="chip-TIKTOK"></button>
+        <button class="chip" style="cursor:pointer;background:#e8f4f8;color:#0077b5;font-size:13px;display:flex;align-items:center;gap:5px" onclick="filterPosts('LINKEDIN')" id="chip-LINKEDIN"></button>
       </div>
 
       <div class="card">
@@ -1094,6 +1085,286 @@
       </div>
     </div>
 
+
+    <!-- ===== PAGES VIEW ===== -->
+    <div class="view" id="view-pages">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Pages</div>
+          <div class="page-subtitle">Edit and publish your Yext-powered local page</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <!-- Device toggle -->
+          <div style="display:flex;background:var(--gray-100);border-radius:8px;padding:3px;gap:2px">
+            <button onclick="setPagesDevice('desktop')" id="devBtn-desktop" style="padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:12px;background:white;box-shadow:0 1px 3px rgba(0,0,0,.12);color:var(--gray-800);display:flex;align-items:center;gap:4px">
+              <span class="material-icons" style="font-size:15px">desktop_mac</span>Desktop
+            </button>
+            <button onclick="setPagesDevice('mobile')" id="devBtn-mobile" style="padding:5px 10px;border:none;border-radius:6px;cursor:pointer;font-size:12px;background:transparent;color:var(--gray-500);display:flex;align-items:center;gap:4px">
+              <span class="material-icons" style="font-size:15px">smartphone</span>Mobile
+            </button>
+          </div>
+          <button class="btn btn-secondary" onclick="markPageDirty()">
+            <span class="material-icons">visibility</span>Preview
+          </button>
+          <button class="btn btn-primary" onclick="savePageChanges()" id="pagesSaveBtn">
+            <span class="material-icons">cloud_upload</span>Publish
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor layout: left panel + website canvas -->
+      <div style="display:flex;gap:0;height:calc(100vh - 180px);min-height:600px;background:var(--gray-100);border-radius:12px;overflow:hidden;border:1px solid var(--gray-200)">
+
+        <!-- Left panel: sections list + edit form -->
+        <div style="width:260px;min-width:260px;background:white;border-right:1px solid var(--gray-200);display:flex;flex-direction:column;overflow:hidden">
+          <!-- Panel tabs -->
+          <div style="display:flex;border-bottom:1px solid var(--gray-200)">
+            <button onclick="setEditorTab('content')" id="etab-content" style="flex:1;padding:10px;border:none;background:white;border-bottom:2px solid var(--blue);color:var(--blue);font-size:12px;font-weight:600;cursor:pointer">Content</button>
+            <button onclick="setEditorTab('design')" id="etab-design" style="flex:1;padding:10px;border:none;background:transparent;border-bottom:2px solid transparent;color:var(--gray-500);font-size:12px;font-weight:500;cursor:pointer">Design</button>
+            <button onclick="setEditorTab('seo')" id="etab-seo" style="flex:1;padding:10px;border:none;background:transparent;border-bottom:2px solid transparent;color:var(--gray-500);font-size:12px;font-weight:500;cursor:pointer">SEO</button>
+          </div>
+          <!-- Content tab -->
+          <div id="epanel-content" style="flex:1;overflow-y:auto;padding:16px">
+            <div style="font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Page Sections</div>
+            <div id="editorSectionList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:20px">
+              <div onclick="scrollPagePreviewTo('hero')" style="padding:8px 10px;border-radius:6px;background:#e8f0fe;border:1.5px solid #4285f4;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px">
+                <span class="material-icons" style="font-size:15px;color:#4285f4">image</span>Hero Banner
+                <span class="material-icons" style="font-size:13px;color:var(--gray-400);margin-left:auto">edit</span>
+              </div>
+              <div onclick="scrollPagePreviewTo('info')" style="padding:8px 10px;border-radius:6px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;color:var(--gray-700);cursor:pointer;display:flex;align-items:center;gap:8px">
+                <span class="material-icons" style="font-size:15px;color:var(--gray-400)">info</span>Business Info
+                <span class="material-icons" style="font-size:13px;color:var(--gray-400);margin-left:auto">edit</span>
+              </div>
+              <div onclick="scrollPagePreviewTo('menu')" style="padding:8px 10px;border-radius:6px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;color:var(--gray-700);cursor:pointer;display:flex;align-items:center;gap:8px">
+                <span class="material-icons" style="font-size:15px;color:var(--gray-400)">restaurant_menu</span>Featured Items
+                <span class="material-icons" style="font-size:13px;color:var(--gray-400);margin-left:auto">edit</span>
+              </div>
+              <div onclick="scrollPagePreviewTo('reviews-sect')" style="padding:8px 10px;border-radius:6px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;color:var(--gray-700);cursor:pointer;display:flex;align-items:center;gap:8px">
+                <span class="material-icons" style="font-size:15px;color:var(--gray-400)">star</span>Reviews
+                <span class="material-icons" style="font-size:13px;color:var(--gray-400);margin-left:auto">edit</span>
+              </div>
+              <div onclick="scrollPagePreviewTo('footer-sect')" style="padding:8px 10px;border-radius:6px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:13px;color:var(--gray-700);cursor:pointer;display:flex;align-items:center;gap:8px">
+                <span class="material-icons" style="font-size:15px;color:var(--gray-400)">web_asset</span>Footer
+                <span class="material-icons" style="font-size:13px;color:var(--gray-400);margin-left:auto">edit</span>
+              </div>
+              <button style="padding:8px 10px;border:1.5px dashed var(--gray-300);border-radius:6px;font-size:12px;color:var(--gray-400);cursor:pointer;background:transparent;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px">
+                <span class="material-icons" style="font-size:15px">add</span>Add Section
+              </button>
+            </div>
+
+            <div style="font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Hero Content</div>
+            <label style="font-size:11px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:3px">Business Name</label>
+            <input id="pagesName" class="text-input" style="margin-bottom:10px;font-size:13px" value="Andy's Bakery" oninput="markPageDirty()">
+            <label style="font-size:11px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:3px">Tagline</label>
+            <input class="text-input" style="margin-bottom:10px;font-size:13px" value="Kingston's Favorite Artisan Bakery">
+            <label style="font-size:11px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:3px">Phone</label>
+            <input id="pagesPhone" class="text-input" style="margin-bottom:10px;font-size:13px" oninput="markPageDirty()">
+            <label style="font-size:11px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:3px">Description</label>
+            <textarea id="pagesDescription" class="text-input" rows="3" style="resize:vertical;margin-bottom:10px;font-family:inherit;font-size:13px" oninput="markPageDirty()"></textarea>
+
+            <div style="padding:8px 10px;background:#e8f5e9;border-radius:6px;font-size:11px;color:#2e7d32;display:flex;align-items:center;gap:6px">
+              <span class="material-icons" style="font-size:14px">sync</span>
+              Syncs to 70+ directories on publish
+            </div>
+          </div>
+          <!-- Design tab (hidden) -->
+          <div id="epanel-design" style="flex:1;overflow-y:auto;padding:16px;display:none">
+            <div style="font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Theme Color</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+              <div style="width:28px;height:28px;border-radius:50%;background:#f6a623;border:2px solid #333;cursor:pointer"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#1a73e8;cursor:pointer"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#34a853;cursor:pointer"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#e53935;cursor:pointer"></div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#6d4c41;cursor:pointer"></div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Template</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="border:2px solid var(--blue);border-radius:8px;overflow:hidden;cursor:pointer">
+                <div style="background:#f6a623;height:30px"></div>
+                <div style="padding:6px 8px;font-size:11px;font-weight:500;color:var(--blue)">Modern ✓</div>
+              </div>
+              <div style="border:1.5px solid var(--gray-200);border-radius:8px;overflow:hidden;cursor:pointer">
+                <div style="background:#1a73e8;height:30px"></div>
+                <div style="padding:6px 8px;font-size:11px;color:var(--gray-600)">Classic</div>
+              </div>
+              <div style="border:1.5px solid var(--gray-200);border-radius:8px;overflow:hidden;cursor:pointer">
+                <div style="background:#222;height:30px"></div>
+                <div style="padding:6px 8px;font-size:11px;color:var(--gray-600)">Bold</div>
+              </div>
+            </div>
+          </div>
+          <!-- SEO tab (hidden) -->
+          <div id="epanel-seo" style="flex:1;overflow-y:auto;padding:16px;display:none">
+            <div style="font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">SEO Score</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+              <div style="width:52px;height:52px;border-radius:50%;background:conic-gradient(#34a853 330deg,#e8f5e9 0);display:flex;align-items:center;justify-content:center">
+                <div style="width:38px;height:38px;border-radius:50%;background:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#2e7d32">91</div>
+              </div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#2e7d32">Excellent</div>
+                <div style="font-size:11px;color:var(--gray-500)">out of 100</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+              <div style="display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px;color:#34a853">check_circle</span>Title tag optimized</div>
+              <div style="display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px;color:#34a853">check_circle</span>Meta description set</div>
+              <div style="display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px;color:#34a853">check_circle</span>LocalBusiness schema</div>
+              <div style="display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px;color:#34a853">check_circle</span>AggregateRating schema</div>
+              <div style="display:flex;align-items:center;gap:6px"><span class="material-icons" style="font-size:14px;color:#fbbc04">warning</span><span style="color:var(--gray-700)">Add more images</span></div>
+            </div>
+            <div style="margin-top:16px;font-size:11px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Top Keywords</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <span style="background:#e3f2fd;color:#1565c0;padding:3px 8px;border-radius:10px;font-size:11px">bakery kingston ny #3</span>
+              <span style="background:#e3f2fd;color:#1565c0;padding:3px 8px;border-radius:10px;font-size:11px">andy's bakery #1</span>
+              <span style="background:#e3f2fd;color:#1565c0;padding:3px 8px;border-radius:10px;font-size:11px">artisan bread #4</span>
+              <span style="background:#e3f2fd;color:#1565c0;padding:3px 8px;border-radius:10px;font-size:11px">bakery near me #7</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Website canvas / preview -->
+        <div id="pagesPreviewCanvas" style="flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;padding:20px;background:#e8eaed">
+          <!-- Browser chrome bar -->
+          <div style="width:100%;max-width:860px;background:#3c4043;border-radius:10px 10px 0 0;padding:8px 12px;display:flex;align-items:center;gap:8px">
+            <div style="display:flex;gap:5px">
+              <div style="width:11px;height:11px;border-radius:50%;background:#ff5f56"></div>
+              <div style="width:11px;height:11px;border-radius:50%;background:#ffbd2e"></div>
+              <div style="width:11px;height:11px;border-radius:50%;background:#27c93f"></div>
+            </div>
+            <div style="flex:1;background:#2d2d2d;border-radius:20px;padding:4px 12px;font-size:11px;color:#9aa0a6;display:flex;align-items:center;gap:6px">
+              <span class="material-icons" style="font-size:13px;color:#9aa0a6">lock</span>
+              andys-bakery-demo.pgsdemo.com
+            </div>
+          </div>
+          <!-- Fake website -->
+          <div id="pagesWebsitePreview" style="width:100%;max-width:860px;background:white;border-radius:0 0 10px 10px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.15);font-family:'Google Sans',Arial,sans-serif">
+            <!-- Nav bar -->
+            <div style="background:white;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eee;position:sticky;top:0;z-index:10">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;background:#f6a623;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:white">A</div>
+                <span style="font-weight:700;font-size:16px;color:#222">Andy's Bakery</span>
+              </div>
+              <div style="display:flex;gap:20px;font-size:13px;color:#444">
+                <span style="cursor:pointer">Menu</span>
+                <span style="cursor:pointer">About</span>
+                <span style="cursor:pointer">Gallery</span>
+                <span style="cursor:pointer">Contact</span>
+              </div>
+              <button style="background:#f6a623;color:white;border:none;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer">Order Online</button>
+            </div>
+
+            <!-- Hero section -->
+            <div id="hero" style="background:linear-gradient(135deg,#f6a623 0%,#e8830a 100%);padding:48px 24px;color:white;position:relative;overflow:hidden">
+              <div style="position:absolute;right:-20px;top:-20px;width:200px;height:200px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+              <div style="position:absolute;right:60px;bottom:-40px;width:140px;height:140px;background:rgba(255,255,255,.05);border-radius:50%"></div>
+              <div style="position:relative;max-width:560px">
+                <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;opacity:.8;margin-bottom:10px">Kingston, NY · Since 2008</div>
+                <div style="font-size:36px;font-weight:800;line-height:1.15;margin-bottom:12px" id="previewName">Andy's Bakery</div>
+                <div style="font-size:16px;opacity:.9;margin-bottom:20px">Kingston's Favorite Artisan Bakery</div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button style="background:white;color:#f6a623;border:none;padding:10px 22px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer">Order Pickup</button>
+                  <button style="background:rgba(255,255,255,.2);color:white;border:2px solid rgba(255,255,255,.5);padding:10px 22px;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer">View Menu</button>
+                </div>
+                <div style="display:flex;gap:16px;margin-top:20px;font-size:13px;opacity:.85;flex-wrap:wrap">
+                  <span>⭐ 4.5 (124 reviews)</span>
+                  <span>🕐 Open Now · Closes 5 PM</span>
+                  <span>📍 36 Rodney St, Kingston</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info bar -->
+            <div id="info" style="background:#fafafa;border-bottom:1px solid #eee;padding:16px 24px;display:flex;gap:24px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#444">
+                <span class="material-icons" style="font-size:18px;color:#f6a623">schedule</span>
+                <div><div style="font-weight:600;color:#34a853">Open Now</div><div style="color:#666;font-size:12px">Mon–Sat 7am–5pm · Sun 8am–3pm</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#444">
+                <span class="material-icons" style="font-size:18px;color:#f6a623">phone</span>
+                <div><div style="font-weight:600" id="previewPhone">(917) 724-3325</div><div style="color:#666;font-size:12px">Call to place orders</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#444">
+                <span class="material-icons" style="font-size:18px;color:#f6a623">location_on</span>
+                <div><div style="font-weight:600">36 Rodney Street</div><div style="color:#666;font-size:12px">Kingston, NY 12401</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#444">
+                <span class="material-icons" style="font-size:18px;color:#f6a623">directions_car</span>
+                <div><div style="font-weight:600">Free Parking</div><div style="color:#666;font-size:12px">Street parking available</div></div>
+              </div>
+            </div>
+
+            <!-- About section -->
+            <div style="padding:32px 24px;background:white">
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f6a623;margin-bottom:8px">About Us</div>
+              <div style="font-size:22px;font-weight:700;color:#222;margin-bottom:12px">Baked with love, served with pride</div>
+              <div style="font-size:14px;color:#555;line-height:1.7;max-width:640px" id="previewDescription">Andy's Bakery has been serving Kingston's finest artisan breads, pastries, and cakes since 2008. Every item is made from scratch daily using locally sourced ingredients. Stop in for your morning croissant or order a custom cake for your next celebration.</div>
+            </div>
+
+            <!-- Featured items -->
+            <div id="menu" style="padding:32px 24px;background:#fafafa;border-top:1px solid #eee">
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f6a623;margin-bottom:8px">Menu Highlights</div>
+              <div style="font-size:22px;font-weight:700;color:#222;margin-bottom:20px">Freshly Baked Daily</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+                <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08)">
+                  <div style="height:100px;background:linear-gradient(135deg,#f6d365,#fda085);display:flex;align-items:center;justify-content:center;font-size:40px">🥐</div>
+                  <div style="padding:12px"><div style="font-weight:600;font-size:14px;margin-bottom:2px">Butter Croissant</div><div style="color:#888;font-size:12px">Fresh daily · $3.50</div></div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08)">
+                  <div style="height:100px;background:linear-gradient(135deg,#a18cd1,#fbc2eb);display:flex;align-items:center;justify-content:center;font-size:40px">🍰</div>
+                  <div style="padding:12px"><div style="font-weight:600;font-size:14px;margin-bottom:2px">Custom Cakes</div><div style="color:#888;font-size:12px">Order 48hrs ahead · from $45</div></div>
+                </div>
+                <div style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.08)">
+                  <div style="height:100px;background:linear-gradient(135deg,#f093fb,#f5576c);display:flex;align-items:center;justify-content:center;font-size:40px">🍞</div>
+                  <div style="padding:12px"><div style="font-weight:600;font-size:14px;margin-bottom:2px">Sourdough Loaf</div><div style="color:#888;font-size:12px">Limited qty · $8.00</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reviews section -->
+            <div id="reviews-sect" style="padding:32px 24px;background:white;border-top:1px solid #eee">
+              <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f6a623;margin-bottom:8px">Reviews</div>
+              <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+                <div style="font-size:48px;font-weight:800;color:#222;line-height:1">4.5</div>
+                <div>
+                  <div style="color:#f6a623;font-size:20px;letter-spacing:2px">★★★★½</div>
+                  <div style="font-size:13px;color:#888">Based on 124 reviews</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div style="padding:14px;background:#fafafa;border-radius:10px;border:1px solid #eee">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#4285f4;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">S</div>
+                    <div><div style="font-size:13px;font-weight:600">Sarah M.</div><div style="font-size:11px;color:#888">Google · 2 days ago</div></div>
+                    <div style="margin-left:auto;color:#f6a623;font-size:13px">★★★★★</div>
+                  </div>
+                  <div style="font-size:13px;color:#444;line-height:1.6">"The croissants here are absolutely incredible. I drive 20 minutes just to get them on weekends!"</div>
+                </div>
+                <div style="padding:14px;background:#fafafa;border-radius:10px;border:1px solid #eee">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <div style="width:28px;height:28px;border-radius:50%;background:#34a853;color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">J</div>
+                    <div><div style="font-size:13px;font-weight:600">James R.</div><div style="font-size:11px;color:#888">Google · 1 week ago</div></div>
+                    <div style="margin-left:auto;color:#f6a623;font-size:13px">★★★★★</div>
+                  </div>
+                  <div style="font-size:13px;color:#444;line-height:1.6">"Best sourdough in the Hudson Valley, hands down. The staff is always friendly and welcoming."</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div id="footer-sect" style="background:#222;color:white;padding:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="font-weight:700;font-size:15px;margin-bottom:4px">Andy's Bakery</div>
+                <div style="font-size:12px;color:#aaa">36 Rodney Street, Kingston, NY 12401</div>
+              </div>
+              <div style="font-size:11px;color:#666;display:flex;align-items:center;gap:6px">
+                <svg viewBox="0 0 32 32" width="16" height="16"><circle cx="16" cy="16" r="16" fill="#f6a623"/><text x="16" y="21" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="white">Y</text></svg>
+                Powered by Yext Pages
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -1297,210 +1568,6 @@
   </div>
 </div>
 
-<!-- ===== PAGES VIEW ===== -->
-<div class="view" id="view-pages">
-  <div class="page-header">
-    <div>
-      <div class="page-title">Pages</div>
-      <div class="page-subtitle">Manage your Yext-powered location page</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <a id="pagesPreviewLink" href="https://www.andybakery.com" target="_blank" class="btn btn-secondary">
-        <span class="material-icons">open_in_new</span>View Live Page
-      </a>
-      <button class="btn btn-primary" onclick="savePageChanges()" id="pagesSaveBtn" style="display:none">
-        <span class="material-icons">cloud_upload</span>Publish Changes
-      </button>
-    </div>
-  </div>
-
-  <!-- Page Status Bar -->
-  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
-    <div class="stat-card" style="flex:1;min-width:150px">
-      <div class="stat-label">Page Status</div>
-      <div class="stat-value" style="font-size:20px;color:var(--green)">Published</div>
-      <div class="stat-meta">Last updated today</div>
-    </div>
-    <div class="stat-card" style="flex:1;min-width:150px">
-      <div class="stat-label">Monthly Visitors</div>
-      <div class="stat-value" style="font-size:20px">842</div>
-      <div class="stat-meta" style="color:var(--green)">↑ 12% vs last month</div>
-    </div>
-    <div class="stat-card" style="flex:1;min-width:150px">
-      <div class="stat-label">Organic Clicks</div>
-      <div class="stat-value" style="font-size:20px">318</div>
-      <div class="stat-meta">From Google Search</div>
-    </div>
-    <div class="stat-card" style="flex:1;min-width:150px">
-      <div class="stat-label">Avg. Position</div>
-      <div class="stat-value" style="font-size:20px">3.2</div>
-      <div class="stat-meta">"bakery kingston ny"</div>
-    </div>
-    <div class="stat-card" style="flex:1;min-width:150px">
-      <div class="stat-label">SEO Score</div>
-      <div class="stat-value" style="font-size:20px;color:var(--green)">91<span style="font-size:14px;color:var(--gray-600)">/100</span></div>
-      <div class="stat-meta">Excellent</div>
-    </div>
-  </div>
-
-  <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
-    <!-- Left: Content Editor -->
-    <div style="flex:1.2;min-width:340px">
-      <div class="card" style="margin-bottom:16px">
-        <div style="font-weight:500;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:6px">
-          <span class="material-icons" style="font-size:18px;color:var(--blue)">edit_note</span>
-          Page Content
-        </div>
-
-        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Business Name</label>
-        <input id="pagesName" class="text-input" style="margin-bottom:12px" value="Andy's Bakery" oninput="markPageDirty()">
-
-        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Description</label>
-        <textarea id="pagesDescription" class="text-input" rows="4" style="resize:vertical;margin-bottom:12px;font-family:inherit" oninput="markPageDirty()"></textarea>
-
-        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Phone</label>
-        <input id="pagesPhone" class="text-input" style="margin-bottom:12px" oninput="markPageDirty()">
-
-        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Website URL</label>
-        <input id="pagesWebsite" class="text-input" style="margin-bottom:12px" oninput="markPageDirty()">
-
-        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Hours</label>
-        <div id="pagesHoursDisplay" style="font-size:13px;color:var(--gray-700);line-height:1.8;background:var(--gray-100);border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#e8f5e9;border-radius:8px;font-size:13px">
-          <span style="color:#2e7d32;display:flex;align-items:center;gap:6px">
-            <span class="material-icons" style="font-size:16px">sync</span>
-            Changes publish to your page AND sync to Google, Yelp, Bing, and 70+ directories
-          </span>
-        </div>
-      </div>
-
-      <!-- SEO Section -->
-      <div class="card">
-        <div style="font-weight:500;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:6px">
-          <span class="material-icons" style="font-size:18px;color:var(--blue)">travel_explore</span>
-          SEO &amp; Search Performance
-        </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Top Ranking Keywords</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">
-            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">bakery kingston ny <strong>#3</strong></span>
-            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">andy's bakery <strong>#1</strong></span>
-            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">artisan bread kingston <strong>#4</strong></span>
-            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">bakery near me <strong>#7</strong></span>
-          </div>
-        </div>
-        <div style="margin-bottom:14px">
-          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Core Web Vitals</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
-              <div style="font-size:20px;font-weight:600;color:#2e7d32">1.2s</div>
-              <div style="font-size:11px;color:var(--gray-600)">LCP</div>
-              <div style="font-size:10px;color:#2e7d32">Good</div>
-            </div>
-            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
-              <div style="font-size:20px;font-weight:600;color:#2e7d32">0.04</div>
-              <div style="font-size:11px;color:var(--gray-600)">CLS</div>
-              <div style="font-size:10px;color:#2e7d32">Good</div>
-            </div>
-            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
-              <div style="font-size:20px;font-weight:600;color:#2e7d32">72ms</div>
-              <div style="font-size:11px;color:var(--gray-600)">INP</div>
-              <div style="font-size:10px;color:#2e7d32">Good</div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Structured Data</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>LocalBusiness schema
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>BreadcrumbList schema
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>OpeningHoursSpecification
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>AggregateRating schema
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right: Page Preview -->
-    <div style="flex:1;min-width:300px">
-      <div class="card" style="padding:0;overflow:hidden">
-        <div style="background:var(--gray-100);padding:8px 12px;font-size:12px;color:var(--gray-600);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--gray-200)">
-          <span class="material-icons" style="font-size:14px">lock</span>
-          <span id="pagesUrlBar">www.andybakery.com</span>
-        </div>
-
-        <!-- Simulated page preview -->
-        <div style="padding:20px;font-family:'Google Sans',sans-serif">
-          <!-- Hero -->
-          <div style="background:linear-gradient(135deg,#f6a623 0%,#e8921f 100%);border-radius:10px;padding:20px;margin-bottom:16px;color:white">
-            <div style="font-size:22px;font-weight:700;margin-bottom:4px" id="previewName">Andy's Bakery</div>
-            <div style="font-size:13px;opacity:.9">36 Rodney Street, Kingston, NY 12401</div>
-            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-              <span style="background:rgba(255,255,255,.25);padding:4px 10px;border-radius:12px;font-size:12px">&#9733; 4.5 · 4 reviews</span>
-              <span style="background:rgba(255,255,255,.25);padding:4px 10px;border-radius:12px;font-size:12px">Bakery · $$</span>
-            </div>
-          </div>
-
-          <!-- Quick info -->
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;font-size:13px">
-            <div style="display:flex;align-items:flex-start;gap:8px">
-              <span class="material-icons" style="font-size:16px;color:var(--blue);margin-top:1px">schedule</span>
-              <span style="color:var(--green);font-weight:500">Open now</span><span style="color:var(--gray-600)"> · Closes 5:00 PM</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="material-icons" style="font-size:16px;color:var(--blue)">phone</span>
-              <span id="previewPhone" style="color:var(--blue)">(917) 724-3325</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="material-icons" style="font-size:16px;color:var(--blue)">language</span>
-              <span id="previewWebsite" style="color:var(--blue)">www.andybakery.com</span>
-            </div>
-          </div>
-
-          <!-- Description -->
-          <div style="font-size:13px;color:var(--gray-700);line-height:1.6;margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden" id="previewDescription"></div>
-
-          <!-- Action buttons -->
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
-              <span class="material-icons" style="font-size:14px">directions</span>Directions
-            </button>
-            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
-              <span class="material-icons" style="font-size:14px">call</span>Call
-            </button>
-            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
-              <span class="material-icons" style="font-size:14px">share</span>Share
-            </button>
-          </div>
-
-          <!-- Powered by Yext -->
-          <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--gray-200);text-align:center;font-size:11px;color:var(--gray-400)">
-            Powered by Yext Pages
-          </div>
-        </div>
-      </div>
-
-      <!-- Traffic chart -->
-      <div class="card" style="margin-top:16px">
-        <div style="font-weight:500;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
-          <span class="material-icons" style="font-size:16px;color:var(--blue)">show_chart</span>
-          Page Traffic (last 7 days)
-        </div>
-        <div id="pagesTrafficChart" style="display:flex;align-items:flex-end;gap:6px;height:80px"></div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:4px" id="pagesTrafficLabels"></div>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Toast container -->
 <div class="toast-container" id="toastContainer"></div>
@@ -3079,9 +3146,90 @@ async function submitReply() {
   btn.innerHTML = '<span class="material-icons">send</span>Send Response';
 }
 
+// ===== PAGES EDITOR HELPERS =====
+function setEditorTab(tab) {
+  ['content','design','seo'].forEach(t => {
+    const btn = document.getElementById('etab-' + t);
+    const panel = document.getElementById('epanel-' + t);
+    if (btn) {
+      if (t === tab) {
+        btn.style.background = 'white';
+        btn.style.borderBottom = '2px solid var(--blue)';
+        btn.style.color = 'var(--blue)';
+        btn.style.fontWeight = '600';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.borderBottom = '2px solid transparent';
+        btn.style.color = 'var(--gray-500)';
+        btn.style.fontWeight = '500';
+      }
+    }
+    if (panel) panel.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+function setPagesDevice(device) {
+  const canvas = document.getElementById('pagesPreviewCanvas');
+  const desktopBtn = document.getElementById('devBtn-desktop');
+  const mobileBtn = document.getElementById('devBtn-mobile');
+  if (!canvas) return;
+  if (device === 'mobile') {
+    canvas.style.maxWidth = '390px';
+    canvas.style.margin = '0 auto';
+    canvas.style.borderRadius = '24px';
+    canvas.style.boxShadow = '0 0 0 8px #1a1a1a, 0 0 0 10px #333';
+    if (desktopBtn) { desktopBtn.style.background = 'transparent'; desktopBtn.style.color = 'var(--gray-500)'; desktopBtn.style.boxShadow = 'none'; }
+    if (mobileBtn)  { mobileBtn.style.background = 'white'; mobileBtn.style.color = 'var(--gray-800)'; mobileBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,.12)'; }
+  } else {
+    canvas.style.maxWidth = '';
+    canvas.style.margin = '';
+    canvas.style.borderRadius = '';
+    canvas.style.boxShadow = '';
+    if (desktopBtn) { desktopBtn.style.background = 'white'; desktopBtn.style.color = 'var(--gray-800)'; desktopBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,.12)'; }
+    if (mobileBtn)  { mobileBtn.style.background = 'transparent'; mobileBtn.style.color = 'var(--gray-500)'; mobileBtn.style.boxShadow = 'none'; }
+  }
+}
+
+function scrollPagePreviewTo(sectionId) {
+  // Highlight the active section item in the sidebar
+  document.querySelectorAll('#editorSectionList > div').forEach(el => {
+    el.style.background = 'var(--gray-50)';
+    el.style.border = '1px solid var(--gray-200)';
+    el.style.color = 'var(--gray-700)';
+  });
+  const target = event && event.currentTarget;
+  if (target) {
+    target.style.background = '#e8f0fe';
+    target.style.border = '1.5px solid #4285f4';
+    target.style.color = 'var(--blue)';
+  }
+  // Scroll the preview iframe/div to the section
+  const el = document.getElementById('preview-' + sectionId);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ===== POPULATE FILTER CHIPS WITH REAL LOGOS =====
+function initFilterChips() {
+  const chipDefs = [
+    { id: 'FIRSTPARTY', label: 'First Party' },
+    { id: 'GOOGLEMYBUSINESS', label: 'Google' },
+    { id: 'FACEBOOK', label: 'Facebook' },
+    { id: 'INSTAGRAM', label: 'Instagram' },
+    { id: 'TIKTOK', label: 'TikTok' },
+    { id: 'LINKEDIN', label: 'LinkedIn' },
+  ];
+  chipDefs.forEach(({ id, label }) => {
+    const btn = document.getElementById('chip-' + id);
+    if (btn && PLATFORM_LOGOS[id]) {
+      btn.innerHTML = PLATFORM_LOGOS[id] + label;
+    }
+  });
+}
+
 // ===== INIT =====
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('schedDate').min = new Date().toISOString().slice(0, 16);
+  initFilterChips();
   loadAll();
 });
 </script>
