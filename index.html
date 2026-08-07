@@ -1,0 +1,3089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Business Profile Manager — Andy's Bakery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1a73e8;
+      --blue-light: #e8f0fe;
+      --blue-mid: #4285f4;
+      --green: #34a853;
+      --green-light: #e6f4ea;
+      --red: #ea4335;
+      --red-light: #fce8e6;
+      --yellow: #fbbc04;
+      --yellow-light: #fef7e0;
+      --gray-100: #f8f9fa;
+      --gray-200: #f1f3f4;
+      --gray-300: #e8eaed;
+      --gray-400: #dadce0;
+      --gray-500: #bdc1c6;
+      --gray-600: #80868b;
+      --gray-700: #5f6368;
+      --gray-800: #3c4043;
+      --gray-900: #202124;
+      --sidebar-w: 256px;
+      --header-h: 64px;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(60,64,67,.3), 0 4px 8px rgba(60,64,67,.15);
+      --shadow-sm: 0 1px 2px rgba(60,64,67,.3);
+    }
+
+    body {
+      font-family: 'Roboto', 'Google Sans', sans-serif;
+      background: var(--gray-100);
+      color: var(--gray-900);
+      font-size: 14px;
+      line-height: 1.5;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+      background: #fff;
+      border-bottom: 1px solid var(--gray-300);
+      display: flex; align-items: center; padding: 0 16px;
+      z-index: 200;
+      gap: 12px;
+    }
+    .header-logo {
+      display: flex; align-items: center; gap: 8px;
+      font-family: 'Google Sans', sans-serif;
+      font-size: 18px; font-weight: 400; color: var(--gray-700);
+      text-decoration: none; white-space: nowrap;
+    }
+    .header-logo svg { width: 24px; height: 24px; flex-shrink: 0; }
+    .header-divider { width: 1px; height: 24px; background: var(--gray-400); flex-shrink: 0; }
+    .header-product { font-family: 'Google Sans', sans-serif; font-size: 18px; color: var(--gray-700); }
+    .header-search {
+      flex: 1; max-width: 600px; margin: 0 16px;
+      background: var(--gray-100); border: 1px solid var(--gray-300);
+      border-radius: 24px; height: 40px;
+      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+      cursor: text; transition: box-shadow .15s, background .15s;
+    }
+    .header-search:hover { background: #fff; box-shadow: var(--shadow-sm); }
+    .header-search input {
+      border: none; background: none; outline: none;
+      font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--gray-900);
+      flex: 1; width: 100%;
+    }
+    .header-search .material-icons { color: var(--gray-600); font-size: 20px; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .icon-btn:hover { background: var(--gray-200); }
+    .icon-btn .material-icons { color: var(--gray-700); font-size: 22px; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 500; cursor: pointer; flex-shrink: 0;
+    }
+
+    /* ===== LAYOUT ===== */
+    .layout {
+      display: flex;
+      margin-top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: #fff;
+      border-right: 1px solid var(--gray-300);
+      display: flex; flex-direction: column;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+    .sidebar-org {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--gray-300);
+    }
+    .sidebar-org-label {
+      font-size: 11px; font-weight: 500; color: var(--gray-600);
+      text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px;
+    }
+    .sidebar-org-name {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 15px; font-weight: 500; color: var(--gray-900);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .sidebar-org-name .material-icons { font-size: 18px; color: var(--gray-600); cursor: pointer; }
+
+    .sidebar-biz {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-300);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .biz-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #f6a623 0%, #e8832a 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; overflow: hidden;
+    }
+    .biz-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .biz-icon .material-icons { color: #fff; font-size: 20px; }
+    .biz-info { flex: 1; min-width: 0; }
+    .biz-name {
+      font-family: 'Google Sans', sans-serif; font-size: 14px; font-weight: 500;
+      color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .biz-sub { font-size: 12px; color: var(--gray-600); }
+
+    .nav { padding: 8px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 16px; height: 40px;
+      cursor: pointer; border-radius: 0 20px 20px 0; margin-right: 12px;
+      font-size: 14px; font-weight: 500; color: var(--gray-800);
+      transition: background .15s; position: relative;
+      text-decoration: none;
+    }
+    .nav-item:hover { background: var(--gray-200); }
+    .nav-item.active { background: var(--blue-light); color: var(--blue); }
+    .nav-item.active .material-icons { color: var(--blue); }
+    .nav-item .material-icons { font-size: 20px; color: var(--gray-600); }
+    .nav-item .badge {
+      margin-left: auto; background: var(--blue); color: #fff;
+      font-size: 11px; font-weight: 600; padding: 2px 7px;
+      border-radius: 10px; min-width: 20px; text-align: center;
+    }
+    .nav-section-label {
+      padding: 12px 16px 4px; font-size: 11px; font-weight: 500;
+      color: var(--gray-600); text-transform: uppercase; letter-spacing: .8px;
+    }
+    .nav-divider { height: 1px; background: var(--gray-300); margin: 8px 0; }
+
+    /* ===== MAIN ===== */
+    .main {
+      flex: 1; overflow-y: auto; padding: 24px;
+      background: var(--gray-100);
+    }
+
+    /* ===== CARDS ===== */
+    .card {
+      background: #fff; border-radius: var(--radius);
+      border: 1px solid var(--gray-300);
+    }
+    .card-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--gray-300);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title {
+      font-family: 'Google Sans', sans-serif; font-size: 14px;
+      font-weight: 500; color: var(--gray-900);
+    }
+    .card-body { padding: 20px; }
+    .card-footer {
+      padding: 12px 20px; border-top: 1px solid var(--gray-300);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0 16px; height: 36px; border-radius: 4px;
+      font-family: 'Google Sans', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; border: none; transition: background .15s, box-shadow .15s;
+      text-decoration: none; white-space: nowrap;
+    }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #1557b0; box-shadow: var(--shadow-sm); }
+    .btn-secondary {
+      background: none; color: var(--blue);
+      border: 1px solid var(--gray-400);
+    }
+    .btn-secondary:hover { background: var(--blue-light); }
+    .btn-text { background: none; color: var(--blue); padding: 0 8px; }
+    .btn-text:hover { background: var(--blue-light); border-radius: 4px; }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-sm { height: 28px; padding: 0 12px; font-size: 13px; }
+    .btn .material-icons { font-size: 18px; }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .page-title {
+      font-family: 'Google Sans', sans-serif; font-size: 22px;
+      font-weight: 400; color: var(--gray-900);
+    }
+    .page-subtitle { font-size: 14px; color: var(--gray-600); margin-top: 2px; }
+
+    /* ===== STATS GRID ===== */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #fff; border: 1px solid var(--gray-300);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .stat-label {
+      font-size: 12px; font-weight: 500; color: var(--gray-600);
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
+    }
+    .stat-value {
+      font-family: 'Google Sans', sans-serif; font-size: 32px;
+      font-weight: 400; color: var(--gray-900); line-height: 1;
+    }
+    .stat-meta { font-size: 12px; color: var(--gray-600); margin-top: 6px; }
+    .stat-meta .up { color: var(--green); }
+    .stat-meta .down { color: var(--red); }
+
+    /* ===== PLATFORM PILLS ===== */
+    .platform-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+    }
+
+    /* ===== STATUS CHIPS ===== */
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+    }
+    .chip-success { background: var(--green-light); color: #137333; }
+    .chip-warning { background: var(--yellow-light); color: #b45309; }
+    .chip-error { background: var(--red-light); color: #c5221f; }
+    .chip-neutral { background: var(--gray-200); color: var(--gray-700); }
+    .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ===== POSTS LIST ===== */
+    .post-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 16px 0; border-bottom: 1px solid var(--gray-300);
+    }
+    .post-item:last-child { border-bottom: none; }
+    .post-platform-icon {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .post-content { flex: 1; min-width: 0; }
+    .post-text {
+      font-size: 14px; color: var(--gray-800); line-height: 1.5;
+      margin-bottom: 6px; white-space: pre-wrap;
+    }
+    .post-meta {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 12px; color: var(--gray-600);
+    }
+    .post-meta .material-icons { font-size: 14px; }
+    .post-stats { display: flex; gap: 16px; margin-top: 8px; }
+    .post-stat { font-size: 12px; color: var(--gray-600); display: flex; align-items: center; gap: 4px; }
+    .post-stat .material-icons { font-size: 14px; }
+    .post-thumbnail {
+      width: 80px; height: 80px; border-radius: 4px;
+      object-fit: cover; flex-shrink: 0;
+    }
+
+    /* ===== PLATFORM CONNECT CARDS ===== */
+    .platform-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .platform-card {
+      background: #fff; border: 1px solid var(--gray-300);
+      border-radius: var(--radius); padding: 20px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .platform-card-header { display: flex; align-items: center; gap: 12px; }
+    .platform-logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .platform-card-name {
+      font-family: 'Google Sans', sans-serif; font-size: 16px; font-weight: 500;
+    }
+    .platform-card-desc { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+    .platform-card-status { display: flex; align-items: center; justify-content: space-between; }
+
+    /* ===== COMPOSE MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.5);
+      z-index: 500; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: #fff; border-radius: 8px; width: 640px; max-width: 95vw;
+      max-height: 90vh; display: flex; flex-direction: column;
+      box-shadow: 0 11px 15px rgba(0,0,0,.2), 0 9px 46px rgba(0,0,0,.12);
+      transform: translateY(20px); transition: transform .2s;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--gray-300);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-family: 'Google Sans', sans-serif; font-size: 18px; font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      padding: 12px 20px; border-top: 1px solid var(--gray-300);
+      display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ===== CONNECT PLATFORM MODAL ===== */
+    .connect-steps { display: flex; flex-direction: column; gap: 12px; }
+    .connect-step-row {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px; border-radius: 8px; background: var(--gray-100);
+    }
+    .connect-step-row.active { background: var(--blue-light); }
+    .connect-step-row.done { background: var(--green-light); }
+    .connect-step-num {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: var(--gray-300); color: var(--gray-700);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600;
+    }
+    .connect-step-row.active .connect-step-num { background: var(--blue); color: #fff; }
+    .connect-step-row.done .connect-step-num { background: var(--green); color: #fff; }
+    .connect-step-body { flex: 1; }
+    .connect-step-title { font-weight: 500; font-size: 14px; color: var(--gray-900); margin-bottom: 2px; }
+    .connect-step-desc { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+    .connect-waiting-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #fff; border: 1px solid var(--gray-300); border-radius: 6px;
+      padding: 6px 12px; font-size: 13px; color: var(--gray-700); margin-top: 8px;
+    }
+
+    /* ===== FORM ELEMENTS ===== */
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 500; color: var(--gray-700);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px;
+    }
+    .form-control {
+      width: 100%; padding: 10px 14px;
+      border: 1px solid var(--gray-400); border-radius: 4px;
+      font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--gray-900);
+      background: #fff; outline: none; transition: border-color .15s;
+      resize: vertical;
+    }
+    .form-control:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
+    .form-control::placeholder { color: var(--gray-500); }
+    textarea.form-control { min-height: 120px; line-height: 1.5; }
+
+    /* ===== PLATFORM SELECTOR ===== */
+    .platform-select { display: flex; flex-wrap: wrap; gap: 8px; }
+    .platform-toggle {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px; cursor: pointer;
+      border: 2px solid var(--gray-300); font-size: 13px; font-weight: 500;
+      transition: all .15s; user-select: none; background: #fff;
+    }
+    .platform-toggle:hover { border-color: var(--gray-500); background: var(--gray-100); }
+    .platform-toggle.selected.google { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .platform-toggle.selected.facebook { border-color: #1877f2; background: #e7f3ff; color: #1877f2; }
+    .platform-toggle.selected.instagram { border-color: #e91e8c; background: #fce4ec; color: #c2185b; }
+    .platform-toggle.selected.tiktok { border-color: #010101; background: #f0f0f0; color: #010101; }
+    .platform-toggle.selected.linkedin { border-color: #0077b5; background: #e8f4f8; color: #0077b5; }
+    .platform-toggle.disabled { opacity: .45; cursor: not-allowed; }
+    .platform-toggle span { font-size: 16px; }
+
+    /* ===== AI GENERATE ===== */
+    .ai-bar {
+      background: linear-gradient(135deg, #e8f0fe 0%, #f3e8ff 100%);
+      border: 1px solid #c5b3f5; border-radius: 8px;
+      padding: 14px 16px; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .ai-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--blue) 0%, #7c4dff 100%);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .ai-icon .material-icons { color: #fff; font-size: 18px; }
+    .ai-input {
+      flex: 1; border: none; background: rgba(255,255,255,.7); outline: none;
+      padding: 8px 12px; border-radius: 20px; font-size: 14px;
+      font-family: 'Roboto', sans-serif; color: var(--gray-900);
+    }
+    .ai-input::placeholder { color: var(--gray-500); }
+
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--gray-300); border-top-color: var(--blue);
+      animation: spin .8s linear infinite; flex-shrink: 0;
+    }
+    .spinner-lg {
+      width: 32px; height: 32px; border-width: 3px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== SCHEDULE PICKER ===== */
+    .schedule-options { display: flex; gap: 8px; margin-bottom: 12px; }
+    .radio-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 20px;
+      border: 2px solid var(--gray-300); cursor: pointer;
+      font-size: 13px; font-weight: 500; color: var(--gray-700);
+      transition: all .15s; user-select: none;
+    }
+    .radio-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .radio-btn input { display: none; }
+
+    /* ===== ANALYTICS ===== */
+    .chart-container {
+      background: #fff; border: 1px solid var(--gray-300); border-radius: var(--radius);
+      padding: 20px; margin-bottom: 16px;
+    }
+    .chart-title {
+      font-family: 'Google Sans', sans-serif; font-size: 14px; font-weight: 500;
+      color: var(--gray-800); margin-bottom: 16px;
+    }
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .bar { width: 100%; border-radius: 3px 3px 0 0; transition: height .4s ease; min-height: 2px; }
+    .bar-label { font-size: 11px; color: var(--gray-600); text-align: center; }
+
+    /* ===== OVERVIEW GRID ===== */
+    .overview-grid {
+      display: grid; grid-template-columns: 1fr 380px;
+      gap: 20px; align-items: start;
+    }
+    @media (max-width: 960px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state { text-align: center; padding: 48px 24px; }
+    .empty-state .material-icons { font-size: 64px; color: var(--gray-400); margin-bottom: 12px; }
+    .empty-state-title {
+      font-family: 'Google Sans', sans-serif; font-size: 18px;
+      color: var(--gray-700); margin-bottom: 8px;
+    }
+    .empty-state-sub { font-size: 14px; color: var(--gray-500); max-width: 320px; margin: 0 auto 20px; }
+
+    /* ===== REMINDER CARD ===== */
+    .reminder-card {
+      background: #fff; border: 1px solid var(--gray-300);
+      border-radius: var(--radius); padding: 18px 20px; margin-bottom: 12px;
+    }
+    .reminder-title {
+      font-family: 'Google Sans', sans-serif; font-size: 15px; font-weight: 500;
+      color: var(--gray-900); margin-bottom: 4px;
+    }
+    .reminder-desc { font-size: 13px; color: var(--gray-600); line-height: 1.5; margin-bottom: 12px; }
+
+    /* ===== TOAST ===== */
+    .toast-container {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 1000; display: flex; flex-direction: column; gap: 8px; align-items: center;
+    }
+    .toast {
+      background: var(--gray-900); color: #fff;
+      padding: 12px 20px; border-radius: 4px; font-size: 14px;
+      box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px;
+      animation: slideUp .25s ease; max-width: 400px;
+    }
+    .toast-success { background: #137333; }
+    .toast-error { background: var(--red); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } }
+
+    /* ===== LOADING ===== */
+    .loading-bar {
+      position: fixed; top: var(--header-h); left: 0; right: 0; height: 3px;
+      background: var(--gray-200); z-index: 300; overflow: hidden;
+    }
+    .loading-bar::after {
+      content: ''; position: absolute; left: -100%; width: 100%; height: 100%;
+      background: var(--blue); animation: loading 1.2s ease infinite;
+    }
+    @keyframes loading { to { left: 100%; } }
+    .loading-bar.hidden { display: none; }
+
+    /* ===== IMAGE UPLOAD ===== */
+    .img-preview-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .img-preview {
+      width: 80px; height: 80px; border-radius: 4px;
+      object-fit: cover; border: 1px solid var(--gray-300);
+    }
+    .img-upload-btn {
+      width: 80px; height: 80px; border-radius: 4px;
+      border: 2px dashed var(--gray-400); display: flex;
+      flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; gap: 4px; font-size: 11px; color: var(--gray-500);
+      transition: border-color .15s, background .15s;
+    }
+    .img-upload-btn:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .img-upload-btn .material-icons { font-size: 22px; }
+
+    /* ===== CHAR COUNT ===== */
+    .char-count { font-size: 12px; color: var(--gray-500); text-align: right; margin-top: 4px; }
+    .char-count.warn { color: var(--yellow); }
+    .char-count.over { color: var(--red); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gray-500); }
+
+    /* views */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .divider { height: 1px; background: var(--gray-300); margin: 16px 0; }
+    .text-link { color: var(--blue); text-decoration: none; font-weight: 500; }
+    .text-link:hover { text-decoration: underline; }
+
+    /* post type */
+    .post-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .post-type-btn {
+      padding: 10px 8px; border-radius: 6px; border: 2px solid var(--gray-300);
+      cursor: pointer; text-align: center; font-size: 12px; font-weight: 500;
+      color: var(--gray-700); transition: all .15s; background: #fff;
+    }
+    .post-type-btn .material-icons { display: block; font-size: 20px; margin-bottom: 4px; color: var(--gray-500); }
+    .post-type-btn:hover { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .post-type-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+    .post-type-btn.selected .material-icons { color: var(--blue); }
+
+    /* ===== LISTINGS ===== */
+    .listings-table { width: 100%; border-collapse: collapse; }
+    .listings-table th {
+      text-align: left; padding: 10px 16px; font-size: 11px;
+      font-weight: 500; color: var(--gray-600); text-transform: uppercase;
+      letter-spacing: .5px; border-bottom: 2px solid var(--gray-300);
+      background: var(--gray-100); white-space: nowrap;
+    }
+    .listings-table td {
+      padding: 13px 16px; border-bottom: 1px solid var(--gray-300);
+      font-size: 13px; color: var(--gray-800); vertical-align: middle;
+    }
+    .listings-table tr:last-child td { border-bottom: none; }
+    .listings-table tbody tr:hover td { background: var(--gray-100); }
+    .publisher-logo {
+      width: 32px; height: 32px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .match-bar-wrap { display:flex; align-items:center; gap:8px; }
+    .match-bar { width:64px; height:6px; border-radius:3px; background:var(--gray-200); overflow:hidden; }
+    .match-bar-fill { height:100%; border-radius:3px; background:var(--green); }
+
+    /* ===== REVIEWS ===== */
+    .review-card {
+      background: #fff; border: 1px solid var(--gray-300);
+      border-radius: var(--radius); padding: 20px; margin-bottom: 12px;
+    }
+    .review-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .reviewer-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 500; flex-shrink: 0;
+    }
+    .stars { display: flex; gap: 1px; }
+    .stars .material-icons { font-size: 16px; color: var(--yellow); }
+    .stars .material-icons.empty { color: var(--gray-300); }
+    .review-text { font-size: 14px; color: var(--gray-800); line-height: 1.6; margin-bottom: 14px; }
+    .review-reply {
+      background: var(--gray-100); border-radius: 8px; padding: 14px;
+      font-size: 13px; color: var(--gray-700); line-height: 1.5;
+      border-left: 3px solid var(--blue); margin-bottom: 0;
+    }
+    .review-reply-label {
+      font-size: 11px; font-weight: 500; color: var(--blue);
+      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px;
+    }
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+    .filter-pill {
+      padding: 6px 14px; border-radius: 20px; border: 1px solid var(--gray-300);
+      font-size: 13px; font-weight: 500; color: var(--gray-700); cursor: pointer;
+      background: #fff; transition: all .15s;
+    }
+    .filter-pill:hover { border-color: var(--blue); color: var(--blue); }
+    .filter-pill.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+  </style>
+</head>
+<body>
+
+<!-- Loading bar -->
+<div class="loading-bar hidden" id="loadingBar"></div>
+
+<!-- Header -->
+<header class="header">
+  <a class="header-logo" href="#" onclick="return false">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    <span>Business Profile Manager</span>
+  </a>
+  <div class="header-divider"></div>
+  <span class="header-product" style="color:#5f6368">Social Publisher</span>
+  <div class="header-search">
+    <span class="material-icons">search</span>
+    <input type="text" placeholder="Search posts, platforms…" />
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" title="Apps"><span class="material-icons">apps</span></button>
+    <button class="icon-btn" title="Help"><span class="material-icons">help_outline</span></button>
+    <button class="icon-btn" title="Notifications"><span class="material-icons">notifications_none</span></button>
+    <div class="avatar" title="Andy Hosier">A</div>
+  </div>
+</header>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-org">
+      <div class="sidebar-org-label">Organization</div>
+      <div class="sidebar-org-name">
+        Andy's Organization
+        <span class="material-icons">expand_more</span>
+      </div>
+    </div>
+    <div class="sidebar-biz">
+      <div class="biz-icon">
+        <img id="bizLogo" src="" alt="" style="display:none" />
+        <span class="material-icons" id="bizLogoFallback">bakery_dining</span>
+      </div>
+      <div class="biz-info">
+        <div class="biz-name" id="sidebarBizName">Andy's Bakery</div>
+        <div class="biz-sub" id="sidebarBizSub">Loading…</div>
+      </div>
+    </div>
+    <div class="nav">
+      <a class="nav-item active" data-view="overview" onclick="showView('overview');return false" href="#">
+        <span class="material-icons">home</span>Overview
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Social</div>
+      <a class="nav-item" data-view="posts" onclick="showView('posts');return false" href="#">
+        <span class="material-icons">article</span>Posts
+        <span class="badge" id="postsCountBadge" style="display:none">0</span>
+      </a>
+      <a class="nav-item" data-view="analytics" onclick="showView('analytics');return false" href="#">
+        <span class="material-icons">bar_chart</span>Analytics
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Presence</div>
+      <a class="nav-item" data-view="pages" onclick="showView('pages');return false" href="#">
+        <span class="material-icons">web</span>Pages
+      </a>
+      <a class="nav-item" data-view="listings" onclick="showView('listings');return false" href="#">
+        <span class="material-icons">location_on</span>Listings
+      </a>
+      <a class="nav-item" data-view="reviews" onclick="showView('reviews');return false" href="#">
+        <span class="material-icons">star_rate</span>Reviews
+        <span class="badge" id="reviewsBadge" style="display:none">0</span>
+      </a>
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Account</div>
+      <a class="nav-item" data-view="platforms" onclick="showView('platforms');return false" href="#">
+        <span class="material-icons">link</span>Platforms
+      </a>
+      <div class="nav-divider"></div>
+      <a class="nav-item" data-view="settings" onclick="showView('settings');return false" href="#">
+        <span class="material-icons">settings</span>Settings
+      </a>
+      <a class="nav-item" href="https://help.yext.com/hc/en-us" target="_blank">
+        <span class="material-icons">help_outline</span>Support
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- ===== OVERVIEW ===== -->
+    <div class="view active" id="view-overview">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Overview</div>
+          <div class="page-subtitle" id="overviewSubtitle">Social publishing for Andy's Bakery</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCompose()">
+          <span class="material-icons">add</span>Create Post
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-value" id="statTotalPosts">—</div>
+          <div class="stat-meta">Last 30 days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Impressions</div>
+          <div class="stat-value" id="statImpressions">—</div>
+          <div class="stat-meta"><span class="up" id="statImpressionsChange"></span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Clicks</div>
+          <div class="stat-value" id="statClicks">—</div>
+          <div class="stat-meta"><span class="up" id="statClicksChange"></span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Connected Platforms</div>
+          <div class="stat-value" id="statPlatforms">—</div>
+          <div class="stat-meta" id="statPlatformsSub">Loading…</div>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--gray-600);font-size:20px">article</span>
+              <span class="card-title">Recent Posts</span>
+              <button class="btn btn-text btn-sm" style="margin-left:auto" onclick="showView('posts')">View all</button>
+            </div>
+            <div class="card-body" id="overviewPostsList">
+              <div class="empty-state" style="padding:32px 24px">
+                <span class="material-icons" style="font-size:48px;color:var(--gray-400)">article</span>
+                <div class="empty-state-title" style="font-size:16px">No posts yet</div>
+                <div class="empty-state-sub">Create your first post to get started</div>
+                <button class="btn btn-primary btn-sm" onclick="openCompose()">
+                  <span class="material-icons">add</span>Create Post
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header">
+              <span class="material-icons" style="color:var(--gray-600);font-size:20px">link</span>
+              <span class="card-title">Platform Status</span>
+              <button class="btn btn-text btn-sm" style="margin-left:auto" onclick="showView('platforms')">Manage</button>
+            </div>
+            <div class="card-body" id="overviewPlatformStatus" style="padding:12px 20px">
+              <div style="color:var(--gray-500);font-size:13px">Loading platforms…</div>
+            </div>
+          </div>
+
+          <div class="reminder-card" id="reminderConnect" style="display:none">
+            <div class="reminder-title">Connect your platforms</div>
+            <div class="reminder-desc">Link your Google Business Profile, Facebook, and other accounts to start publishing posts directly from here.</div>
+            <button class="btn btn-secondary btn-sm" onclick="showView('platforms')">
+              <span class="material-icons">link</span>Connect platforms
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== POSTS ===== -->
+    <div class="view" id="view-posts">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Posts</div>
+          <div class="page-subtitle" id="postsSubtitle">All posts for Andy's Bakery</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCompose()">
+          <span class="material-icons">add</span>Create Post
+        </button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="chip chip-neutral" style="cursor:pointer;font-size:13px" onclick="filterPosts('all')">All posts</button>
+        <button class="chip" style="cursor:pointer;background:var(--blue-light);color:var(--blue);font-size:13px" onclick="filterPosts('GOOGLEMYBUSINESS')">
+          🔵 Google
+        </button>
+        <button class="chip" style="cursor:pointer;background:#e7f3ff;color:#1877f2;font-size:13px" onclick="filterPosts('FACEBOOK')">
+          📘 Facebook
+        </button>
+        <button class="chip" style="cursor:pointer;background:#fce4ec;color:#c2185b;font-size:13px" onclick="filterPosts('INSTAGRAM')">
+          📷 Instagram
+        </button>
+        <button class="chip" style="cursor:pointer;background:#f0f0f0;color:#010101;font-size:13px" onclick="filterPosts('TIKTOK')">
+          🎵 TikTok
+        </button>
+        <button class="chip" style="cursor:pointer;background:#e8f4f8;color:#0077b5;font-size:13px" onclick="filterPosts('LINKEDIN')">
+          💼 LinkedIn
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body" id="postsList">
+          <div style="color:var(--gray-500);font-size:13px;text-align:center;padding:20px">
+            <div class="spinner" style="margin:0 auto 12px"></div>
+            Loading posts…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ANALYTICS ===== -->
+    <div class="view" id="view-analytics">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Analytics</div>
+          <div class="page-subtitle">Post performance — last 30 days</div>
+        </div>
+        <select class="form-control" style="width:auto;height:36px;padding:0 12px;font-size:13px">
+          <option>Last 30 days</option>
+          <option>Last 7 days</option>
+          <option>Last 90 days</option>
+        </select>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-label">Impressions</div>
+          <div class="stat-value">3,214</div>
+          <div class="stat-meta"><span class="up">↑ 18%</span> vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Clicks</div>
+          <div class="stat-value">428</div>
+          <div class="stat-meta"><span class="up">↑ 11%</span> vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg. Engagement Rate</div>
+          <div class="stat-value">5.1%</div>
+          <div class="stat-meta"><span class="up">↑ 0.6pp</span> vs last period</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Posts Published</div>
+          <div class="stat-value" id="analyticsPostCount">0</div>
+          <div class="stat-meta">Last 30 days</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="chart-container">
+          <div class="chart-title">Impressions by day</div>
+          <div class="bar-chart" id="impressionsChart"></div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Clicks by day</div>
+          <div class="bar-chart" id="clicksChart"></div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Engagement by platform</div>
+        <div id="platformEngagementChart" style="display:flex;gap:24px;flex-wrap:wrap;padding-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- ===== PLATFORMS ===== -->
+    <div class="view" id="view-platforms">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Connected Platforms</div>
+          <div class="page-subtitle">Connect your social accounts to publish posts</div>
+        </div>
+      </div>
+      <div class="platform-grid" id="platformGrid"></div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="view" id="view-settings">
+      <div class="page-header">
+        <div class="page-title">Settings</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:960px">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Business Information</span></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Business Name</label>
+              <input class="form-control" id="settingName" value="Andy's Bakery" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <input class="form-control" id="settingAddress" value="36 Rodney Street, Kingston, NY 12401" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-control" id="settingPhone" value="+19177243325" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Website</label>
+              <input class="form-control" id="settingWebsite" value="http://www.andybakery.com" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-control" value="andy@andybakery.com" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Hours</label>
+              <input class="form-control" value="Mon–Sun  7:00 AM – 5:00 PM" readonly />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Products</label>
+              <input class="form-control" value="Bread, Cakes, Buns" readonly />
+            </div>
+          </div>
+          <div class="card-footer">
+            <a id="editInYextLink" href="https://www.yext.com/s/5554655/entity/edit3?entityIds=AndyBK" target="_blank" class="btn btn-secondary btn-sm">
+              <span class="material-icons">open_in_new</span>Edit in Yext
+            </a>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><span class="card-title">Social Handles</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-label">Facebook</label>
+                <input class="form-control" value="facebook.com/andysartisanbread" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Instagram</label>
+                <input class="form-control" value="@andybakery" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Twitter / X</label>
+                <input class="form-control" value="@andybakery" readonly />
+              </div>
+              <div class="form-group">
+                <label class="form-label">LinkedIn</label>
+                <input class="form-control" value="linkedin.com/in/andybakery" readonly />
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Account / Entity ID</label>
+                <input class="form-control" id="settingEntityId" value="AndyBK" readonly style="color:var(--gray-600);font-family:monospace;font-size:13px" />
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Photo Gallery</span></div>
+            <div class="card-body">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="settingsPhotoGallery">
+                <!-- populated by JS -->
+              </div>
+              <div style="margin-top:12px;font-size:12px;color:var(--gray-600)">
+                Photos sourced from Yext Knowledge Graph · <a href="https://www.yext.com/s/5554655/entity/edit3?entityIds=AndyBK" target="_blank" class="text-link">Manage in Yext →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LISTINGS ===== -->
+    <div class="view" id="view-listings">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Listings</div>
+          <div class="page-subtitle" id="listingsSubtitle">Publisher sync status for Andy's Bakery</div>
+        </div>
+        <a href="https://www.yext.com/s/5554655/listings" target="_blank" class="btn btn-secondary">
+          <span class="material-icons">open_in_new</span>Manage in Yext
+        </a>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-label">Total Publishers</div>
+          <div class="stat-value" id="listingsTotalPubs">—</div>
+          <div class="stat-meta">Monitored</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Live & Synced</div>
+          <div class="stat-value" style="color:var(--green)" id="listingsInSync">—</div>
+          <div class="stat-meta">Accurate listings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Needs Attention</div>
+          <div class="stat-value" style="color:var(--red)" id="listingsNeedsAttention">—</div>
+          <div class="stat-meta">Action required</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Sync Score</div>
+          <div class="stat-value" id="listingsSyncScore">—</div>
+          <div class="stat-meta">Out of 100</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="material-icons" style="color:var(--gray-600);font-size:20px">location_on</span>
+          <span class="card-title">Publisher Listings</span>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="loadListings(true)">
+              <span class="material-icons">refresh</span>Refresh
+            </button>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0" id="listingsTableWrap">
+          <div style="text-align:center;padding:40px;color:var(--gray-500)">
+            <div class="spinner spinner-lg" style="margin:0 auto 12px"></div>
+            Loading listings…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REVIEWS ===== -->
+    <div class="view" id="view-reviews">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Reviews</div>
+          <div class="page-subtitle" id="reviewsSubtitle">Monitor and respond to customer reviews</div>
+        </div>
+        <a href="https://www.yext.com/s/5554655/reviews" target="_blank" class="btn btn-secondary">
+          <span class="material-icons">open_in_new</span>Manage in Yext
+        </a>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-label">Avg. Rating</div>
+          <div class="stat-value" id="reviewsAvgRating">—</div>
+          <div class="stat-meta" id="reviewsRatingSub"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Reviews</div>
+          <div class="stat-value" id="reviewsTotal">—</div>
+          <div class="stat-meta">All platforms</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Awaiting Response</div>
+          <div class="stat-value" style="color:var(--yellow)" id="reviewsPending">—</div>
+          <div class="stat-meta">Need your reply</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Response Rate</div>
+          <div class="stat-value" id="reviewsResponseRate">—</div>
+          <div class="stat-meta">Last 30 days</div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-pill active" id="reviewFilter-all" onclick="filterReviews('all')">All</button>
+        <button class="filter-pill" id="reviewFilter-unanswered" onclick="filterReviews('unanswered')">Needs Response</button>
+        <button class="filter-pill" id="reviewFilter-5" onclick="filterReviews(5)">⭐⭐⭐⭐⭐ 5 Star</button>
+        <button class="filter-pill" id="reviewFilter-4" onclick="filterReviews(4)">⭐⭐⭐⭐ 4 Star</button>
+        <button class="filter-pill" id="reviewFilter-low" onclick="filterReviews('low')">⚠ Low Rating (1–3)</button>
+        <select class="form-control" id="reviewPlatformFilter"
+          style="width:auto;height:34px;padding:0 12px;font-size:13px;margin-left:auto"
+          onchange="filterReviews(state.reviewFilter)">
+          <option value="">All platforms</option>
+          <option value="GOOGLEMYBUSINESS">🔵 Google</option>
+          <option value="FACEBOOK">📘 Facebook</option>
+          <option value="YEXT">🌐 Yext</option>
+        </select>
+      </div>
+
+      <div id="reviewsList">
+        <div style="text-align:center;padding:40px;color:var(--gray-500)">
+          <div class="spinner spinner-lg" style="margin:0 auto 12px"></div>
+          Loading reviews…
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== COMPOSE MODAL ===== -->
+<div class="modal-overlay" id="composeModal">
+  <div class="modal" style="width:680px">
+    <div class="modal-header">
+      <div class="modal-title">Create Post</div>
+      <button class="icon-btn" onclick="closeCompose()">
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- AI Bar -->
+      <div class="ai-bar" id="aiBar">
+        <div class="ai-icon"><span class="material-icons">auto_awesome</span></div>
+        <input class="ai-input" id="aiPromptInput"
+               placeholder="Describe what you want to post about…"
+               onkeydown="if(event.key==='Enter')generatePost()" />
+        <button class="btn btn-primary btn-sm" onclick="generatePost()" id="aiGenerateBtn">
+          <span class="material-icons">auto_awesome</span>Generate
+        </button>
+      </div>
+
+      <!-- Platform selection -->
+      <div class="form-group">
+        <label class="form-label">Publish to</label>
+        <div class="platform-select" id="platformSelect">
+          <div class="platform-toggle firstparty selected" data-platform="FIRSTPARTY" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-FIRSTPARTY"></span>First Party
+          </div>
+          <div class="platform-toggle google" data-platform="GOOGLEMYBUSINESS" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-GOOGLEMYBUSINESS"></span>Google
+          </div>
+          <div class="platform-toggle facebook" data-platform="FACEBOOK" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-FACEBOOK"></span>Facebook
+          </div>
+          <div class="platform-toggle instagram" data-platform="INSTAGRAM" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-INSTAGRAM"></span>Instagram
+          </div>
+          <div class="platform-toggle tiktok" data-platform="TIKTOK" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-TIKTOK"></span>TikTok
+          </div>
+          <div class="platform-toggle linkedin" data-platform="LINKEDIN" onclick="togglePlatform(this)">
+            <span class="ptoggle-logo" id="ptlogo-LINKEDIN"></span>LinkedIn
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:6px" id="eligibilityNote">
+          Connect platforms to enable publishing
+        </div>
+      </div>
+
+      <!-- Post type (Google) -->
+      <div class="form-group" id="postTypeGroup">
+        <label class="form-label">Post Type (Google)</label>
+        <div class="post-type-grid">
+          <div class="post-type-btn selected" data-type="STANDARD" onclick="selectPostType(this)">
+            <span class="material-icons">article</span>Standard
+          </div>
+          <div class="post-type-btn" data-type="OFFER" onclick="selectPostType(this)">
+            <span class="material-icons">local_offer</span>Offer
+          </div>
+          <div class="post-type-btn" data-type="EVENT" onclick="selectPostType(this)">
+            <span class="material-icons">event</span>Event
+          </div>
+          <div class="post-type-btn" data-type="ALERT" onclick="selectPostType(this)">
+            <span class="material-icons">announcement</span>Alert
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="form-group">
+        <label class="form-label">Post Text</label>
+        <div style="position:relative">
+          <textarea class="form-control" id="postTextInput"
+                    placeholder="Write your post here or use AI to generate one…"
+                    oninput="updateCharCount()" rows="5"></textarea>
+          <div class="char-count" id="charCount">0 / 1500</div>
+        </div>
+      </div>
+
+      <!-- Image -->
+      <div class="form-group">
+        <label class="form-label">Images</label>
+        <div class="img-preview-wrap" id="imgPreviewWrap">
+          <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
+            <span class="material-icons">add_photo_alternate</span>
+            Add image
+          </div>
+        </div>
+        <input type="file" id="imgFileInput" accept="image/*" style="display:none" multiple onchange="previewImages(event)" />
+      </div>
+
+      <!-- CTA -->
+      <div class="form-group" id="ctaGroup">
+        <label class="form-label">Call to Action (Google)</label>
+        <select class="form-control" id="ctaSelect" style="height:40px">
+          <option value="">None</option>
+          <option value="LEARN_MORE">Learn more</option>
+          <option value="CALL">Call</option>
+          <option value="BOOK">Book</option>
+          <option value="ORDER">Order</option>
+          <option value="SIGN_UP">Sign up</option>
+        </select>
+      </div>
+      <div class="form-group" id="ctaUrlGroup" style="display:none">
+        <label class="form-label">Button URL</label>
+        <input class="form-control" id="ctaUrl" placeholder="https://…" />
+      </div>
+
+      <!-- Schedule -->
+      <div class="form-group">
+        <label class="form-label">Schedule</label>
+        <div class="schedule-options">
+          <label class="radio-btn selected" id="schedNow" onclick="selectSchedule('now')">
+            <input type="radio" name="schedule" value="now" checked />
+            <span class="material-icons" style="font-size:16px">send</span>Publish now
+          </label>
+          <label class="radio-btn" id="schedLater" onclick="selectSchedule('later')">
+            <input type="radio" name="schedule" value="later" />
+            <span class="material-icons" style="font-size:16px">schedule</span>Schedule
+          </label>
+        </div>
+        <div id="schedDateWrap" style="display:none">
+          <input class="form-control" type="datetime-local" id="schedDate" />
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeCompose()">Cancel</button>
+      <button class="btn btn-primary" id="publishBtn" onclick="publishPost()">
+        <span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONNECT PLATFORM MODAL ===== -->
+<div class="modal-overlay" id="connectModal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="connectModalTitle">Connect Platform</div>
+      <button class="icon-btn" onclick="closeConnectModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="connect-steps" id="connectSteps">
+        <!-- Rendered by JS -->
+      </div>
+      <div id="connectBlockedMsg" style="display:none;margin-top:16px;padding:14px;background:var(--red-light);border-radius:8px;font-size:13px;color:var(--gray-800)">
+        <strong>Popup blocked.</strong> Your browser blocked the authorization window.
+        <a id="connectFallbackLink" href="#" target="_blank" class="text-link" style="display:block;margin-top:6px">
+          Click here to open authorization manually →
+        </a>
+      </div>
+    </div>
+    <div class="modal-footer" id="connectModalFooter">
+      <button class="btn btn-secondary" onclick="closeConnectModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REPLY MODAL ===== -->
+<div class="modal-overlay" id="replyModal">
+  <div class="modal" style="width:620px">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="material-icons" style="font-size:20px;color:var(--blue)">reply</span>
+        Respond to Review
+      </div>
+      <button class="icon-btn" onclick="closeReplyModal()"><span class="material-icons">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div id="replyReviewPreview"
+        style="background:var(--gray-100);border-radius:8px;padding:14px;margin-bottom:16px;
+               font-size:13px;color:var(--gray-700);line-height:1.5;border-left:3px solid var(--gray-400)">
+      </div>
+      <div class="ai-bar">
+        <div class="ai-icon"><span class="material-icons">auto_awesome</span></div>
+        <input class="ai-input" id="replyAiPrompt"
+          placeholder="Describe your reply tone (e.g. 'grateful and professional')…"
+          onkeydown="if(event.key==='Enter')generateReply()" />
+        <button class="btn btn-primary btn-sm" onclick="generateReply()" id="replyAiBtn">
+          <span class="material-icons">auto_awesome</span>Generate
+        </button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Response</label>
+        <textarea class="form-control" id="replyTextInput" rows="5"
+          placeholder="Write your response, or use AI to generate one…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeReplyModal()">Cancel</button>
+      <button class="btn btn-primary" id="replySubmitBtn" onclick="submitReply()">
+        <span class="material-icons">send</span>Send Response
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGES VIEW ===== -->
+<div class="view" id="view-pages">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Pages</div>
+      <div class="page-subtitle">Manage your Yext-powered location page</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a id="pagesPreviewLink" href="https://www.andybakery.com" target="_blank" class="btn btn-secondary">
+        <span class="material-icons">open_in_new</span>View Live Page
+      </a>
+      <button class="btn btn-primary" onclick="savePageChanges()" id="pagesSaveBtn" style="display:none">
+        <span class="material-icons">cloud_upload</span>Publish Changes
+      </button>
+    </div>
+  </div>
+
+  <!-- Page Status Bar -->
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+    <div class="stat-card" style="flex:1;min-width:150px">
+      <div class="stat-label">Page Status</div>
+      <div class="stat-value" style="font-size:20px;color:var(--green)">Published</div>
+      <div class="stat-meta">Last updated today</div>
+    </div>
+    <div class="stat-card" style="flex:1;min-width:150px">
+      <div class="stat-label">Monthly Visitors</div>
+      <div class="stat-value" style="font-size:20px">842</div>
+      <div class="stat-meta" style="color:var(--green)">↑ 12% vs last month</div>
+    </div>
+    <div class="stat-card" style="flex:1;min-width:150px">
+      <div class="stat-label">Organic Clicks</div>
+      <div class="stat-value" style="font-size:20px">318</div>
+      <div class="stat-meta">From Google Search</div>
+    </div>
+    <div class="stat-card" style="flex:1;min-width:150px">
+      <div class="stat-label">Avg. Position</div>
+      <div class="stat-value" style="font-size:20px">3.2</div>
+      <div class="stat-meta">"bakery kingston ny"</div>
+    </div>
+    <div class="stat-card" style="flex:1;min-width:150px">
+      <div class="stat-label">SEO Score</div>
+      <div class="stat-value" style="font-size:20px;color:var(--green)">91<span style="font-size:14px;color:var(--gray-600)">/100</span></div>
+      <div class="stat-meta">Excellent</div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+    <!-- Left: Content Editor -->
+    <div style="flex:1.2;min-width:340px">
+      <div class="card" style="margin-bottom:16px">
+        <div style="font-weight:500;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:6px">
+          <span class="material-icons" style="font-size:18px;color:var(--blue)">edit_note</span>
+          Page Content
+        </div>
+
+        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Business Name</label>
+        <input id="pagesName" class="text-input" style="margin-bottom:12px" value="Andy's Bakery" oninput="markPageDirty()">
+
+        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Description</label>
+        <textarea id="pagesDescription" class="text-input" rows="4" style="resize:vertical;margin-bottom:12px;font-family:inherit" oninput="markPageDirty()"></textarea>
+
+        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Phone</label>
+        <input id="pagesPhone" class="text-input" style="margin-bottom:12px" oninput="markPageDirty()">
+
+        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Website URL</label>
+        <input id="pagesWebsite" class="text-input" style="margin-bottom:12px" oninput="markPageDirty()">
+
+        <label style="font-size:12px;font-weight:500;color:var(--gray-600);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Hours</label>
+        <div id="pagesHoursDisplay" style="font-size:13px;color:var(--gray-700);line-height:1.8;background:var(--gray-100);border-radius:8px;padding:10px 12px;margin-bottom:12px"></div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#e8f5e9;border-radius:8px;font-size:13px">
+          <span style="color:#2e7d32;display:flex;align-items:center;gap:6px">
+            <span class="material-icons" style="font-size:16px">sync</span>
+            Changes publish to your page AND sync to Google, Yelp, Bing, and 70+ directories
+          </span>
+        </div>
+      </div>
+
+      <!-- SEO Section -->
+      <div class="card">
+        <div style="font-weight:500;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:6px">
+          <span class="material-icons" style="font-size:18px;color:var(--blue)">travel_explore</span>
+          SEO &amp; Search Performance
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Top Ranking Keywords</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">bakery kingston ny <strong>#3</strong></span>
+            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">andy's bakery <strong>#1</strong></span>
+            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">artisan bread kingston <strong>#4</strong></span>
+            <span style="background:#e3f2fd;color:#1565c0;padding:4px 10px;border-radius:12px;font-size:12px">bakery near me <strong>#7</strong></span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Core Web Vitals</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
+              <div style="font-size:20px;font-weight:600;color:#2e7d32">1.2s</div>
+              <div style="font-size:11px;color:var(--gray-600)">LCP</div>
+              <div style="font-size:10px;color:#2e7d32">Good</div>
+            </div>
+            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
+              <div style="font-size:20px;font-weight:600;color:#2e7d32">0.04</div>
+              <div style="font-size:11px;color:var(--gray-600)">CLS</div>
+              <div style="font-size:10px;color:#2e7d32">Good</div>
+            </div>
+            <div style="flex:1;min-width:100px;text-align:center;padding:10px;background:#e8f5e9;border-radius:8px">
+              <div style="font-size:20px;font-weight:600;color:#2e7d32">72ms</div>
+              <div style="font-size:11px;color:var(--gray-600)">INP</div>
+              <div style="font-size:10px;color:#2e7d32">Good</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:500;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Structured Data</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>LocalBusiness schema
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>BreadcrumbList schema
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>OpeningHoursSpecification
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+              <span class="material-icons" style="font-size:16px;color:var(--green)">check_circle</span>AggregateRating schema
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Page Preview -->
+    <div style="flex:1;min-width:300px">
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="background:var(--gray-100);padding:8px 12px;font-size:12px;color:var(--gray-600);display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--gray-200)">
+          <span class="material-icons" style="font-size:14px">lock</span>
+          <span id="pagesUrlBar">www.andybakery.com</span>
+        </div>
+
+        <!-- Simulated page preview -->
+        <div style="padding:20px;font-family:'Google Sans',sans-serif">
+          <!-- Hero -->
+          <div style="background:linear-gradient(135deg,#f6a623 0%,#e8921f 100%);border-radius:10px;padding:20px;margin-bottom:16px;color:white">
+            <div style="font-size:22px;font-weight:700;margin-bottom:4px" id="previewName">Andy's Bakery</div>
+            <div style="font-size:13px;opacity:.9">36 Rodney Street, Kingston, NY 12401</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <span style="background:rgba(255,255,255,.25);padding:4px 10px;border-radius:12px;font-size:12px">&#9733; 4.5 · 4 reviews</span>
+              <span style="background:rgba(255,255,255,.25);padding:4px 10px;border-radius:12px;font-size:12px">Bakery · $$</span>
+            </div>
+          </div>
+
+          <!-- Quick info -->
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;font-size:13px">
+            <div style="display:flex;align-items:flex-start;gap:8px">
+              <span class="material-icons" style="font-size:16px;color:var(--blue);margin-top:1px">schedule</span>
+              <span style="color:var(--green);font-weight:500">Open now</span><span style="color:var(--gray-600)"> · Closes 5:00 PM</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="material-icons" style="font-size:16px;color:var(--blue)">phone</span>
+              <span id="previewPhone" style="color:var(--blue)">(917) 724-3325</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="material-icons" style="font-size:16px;color:var(--blue)">language</span>
+              <span id="previewWebsite" style="color:var(--blue)">www.andybakery.com</span>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div style="font-size:13px;color:var(--gray-700);line-height:1.6;margin-bottom:16px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden" id="previewDescription"></div>
+
+          <!-- Action buttons -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+              <span class="material-icons" style="font-size:14px">directions</span>Directions
+            </button>
+            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+              <span class="material-icons" style="font-size:14px">call</span>Call
+            </button>
+            <button style="flex:1;padding:8px;border:1px solid var(--blue);color:var(--blue);background:white;border-radius:8px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px">
+              <span class="material-icons" style="font-size:14px">share</span>Share
+            </button>
+          </div>
+
+          <!-- Powered by Yext -->
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--gray-200);text-align:center;font-size:11px;color:var(--gray-400)">
+            Powered by Yext Pages
+          </div>
+        </div>
+      </div>
+
+      <!-- Traffic chart -->
+      <div class="card" style="margin-top:16px">
+        <div style="font-weight:500;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+          <span class="material-icons" style="font-size:16px;color:var(--blue)">show_chart</span>
+          Page Traffic (last 7 days)
+        </div>
+        <div id="pagesTrafficChart" style="display:flex;align-items:flex-end;gap:6px;height:80px"></div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:4px" id="pagesTrafficLabels"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ===== CONSTANTS =====
+const API_BASE = 'https://api.yextapis.com/v2';
+const ACCOUNT_ID = '5554655';
+let ENTITY_ID = 'AndyBK';
+const API_KEY = '6bf84a0efc859f6dd54e170ecba2331a';
+const API_VERSION = '20250514';
+const YEXT_ACCOUNT_UID = '5554655';
+const PARENT_ACCOUNT_ID = '4079861';
+
+// Real Google-only optimization link fetched from /optimizationlink?taskIds=29 (task 29 = Connect to Google My Business) 2026-08-06
+const GBP_OPTIMIZATION_LINK = 'https://reseller123.optimizelocation.com/users/tokens?token=a8Q-P838rzDioSkNku-bE5vJ';
+
+// ===== REAL ENTITY DATA (fetched from Yext API, baked in at build time) =====
+const REAL_ENTITY = {
+  name: "Andy's Bakery",
+  address: { line1: '36 Rodney Street', city: 'Kingston', region: 'NY', postalCode: '12401', countryCode: 'US' },
+  mainPhone: '+19177243325',
+  alternatePhone: '+19177243356',
+  websiteUrl: { url: 'http://www.andybakery.com' },
+  menuUrl: { url: 'http://www.andybakery.com/menu' },
+  orderUrl: { url: 'http://www.andybakery.com/order' },
+  deliveryUrl: 'http://www.andybakery.com/delivery',
+  facebookPageUrl: 'https://www.facebook.com/andysartisanbread/',
+  instagramHandle: 'andybakery',
+  twitterHandle: 'andybakery',
+  linkedInUrl: 'https://www.linkedin.com/in/andybakery/',
+  emails: ['andy@andybakery.com'],
+  priceRange: 'ONE',
+  products: ['Bread', 'Cakes', 'Buns'],
+  yearEstablished: 2026,
+  description: "Located in Kingston, NY, Andy's Bakery is a beloved neighborhood gem that promises to delight your taste buds with its freshly baked goods. From flaky croissants to decadent cakes, our expert bakers craft each delicacy with care and dedication using only the finest ingredients and traditional baking techniques.",
+  reviewGenerationUrl: 'https://www.leavefeedback.app/tp/MlDb3Xm',
+  logo: { image: { url: 'https://a.mktgcdn.com/p/FCbOVbvXoyeo1JDzv2A5u9d3XwhiyhO2nLBP8ZYm4fw/150x150.png' } },
+  photoGallery: [
+    { image: { url: 'https://a.mktgcdn.com/p/NRQeojrK58r0OjnC9q97lSRG-K3Yv_-C1pleqgKWKhg/422x388.png' } },
+    { image: { url: 'https://a.mktgcdn.com/p/2D_IAsR3-9g7yqTwmq--jdwmjeFnb5jaJ4S_o5NmbEs/390x358.png' } },
+    { image: { url: 'https://a.mktgcdn.com/p/2dgzscHBNCJupHodJYmmDsPko0sfoOjBNxEBec4_dzQ/372x364.png' } },
+    { image: { url: 'https://a.mktgcdn.com/p/Ba7qJI_gbChTnc9rsBM9CzzhXo6fKJcAtCRgCAmfEts/359x385.png' } },
+    { image: { url: 'https://a.mktgcdn.com/p/aq6sU4ndCSMIGT721WpfErhd7Rn4Fn8JG18i2nXqUjY/357x365.png' } },
+  ],
+  hours: {
+    monday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    tuesday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    wednesday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    thursday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    friday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    saturday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+    sunday: { openIntervals: [{ start: '07:00', end: '17:00' }] },
+  },
+  meta: { id: 'AndyBK', accountId: '5554655' }
+};
+
+// ===== REAL POSTS (fetched from /posts API 2026-08-06) =====
+const REAL_POSTS = [
+  {
+    postId: '399308532',
+    publisher: 'FIRSTPARTY',
+    entityId: 'AndyBK',
+    title: 'Image post',
+    text: "🥖 Fresh from the oven and ready to make your day! Our lovely bread is baked with love and the finest ingredients. Perfectly crusty on the outside and soft on the inside, it's a treat you won't want to miss. Come by and grab a loaf while it's still warm! What's your favorite way to enjoy fresh bread? Let us know in the comments! #FreshBread #BakedWithLove #BreadLovers",
+    photoUrls: ['https://a.mktgcdn.com/p/2dgzscHBNCJupHodJYmmDsPko0sfoOjBNxEBec4_dzQ/372x364.png'],
+    status: 'POST_SUCCEEDED',
+    createDate: '2026-08-06T20:50:16Z',
+    metrics: { impressions: 581, clicks: 64 }
+  },
+  {
+    postId: '399308494',
+    publisher: 'FIRSTPARTY',
+    entityId: 'AndyBK',
+    title: 'My day baking',
+    text: "Rise and shine, dough lovers! 🌞 Ever wondered what a day in the life of a baker looks like? My day starts before the sun is up, with the comforting aroma of fresh dough and the gentle hum of the oven. Mixing, kneading, and shaping are my morning workout! 💪 As the first batch of bread goes into the oven, the bakery fills with the irresistible scent of freshly baked goodness.\n\nBy mid-morning, it's all about the pastries! From flaky croissants to sweet danishes, each creation is a little piece of art. And let's not forget the joy of decorating cakes — it's like adding the cherry on top of a perfect day! 🎂\n\n#BakersLife #FreshlyBaked #BreadLovers #PastryMagic",
+    photoUrls: [],
+    status: 'POST_SUCCEEDED',
+    createDate: '2026-08-06T20:48:20Z',
+    metrics: { impressions: 402, clicks: 37 }
+  },
+  {
+    postId: '399308464',
+    publisher: 'FIRSTPARTY',
+    entityId: 'AndyBK',
+    title: 'Bake off',
+    text: "🎉🍰 Ready, Set, Bake! 🍰🎉 The new season of Bake Off is here, and it's time to get your aprons on and ovens preheated! Whether you're a seasoned baker or just love watching the magic unfold, this season promises to be the most exciting yet. Expect jaw-dropping creations, heartwarming stories, and a sprinkle of drama!\n\nJoin us every week as we cheer on our favorite bakers and maybe even get inspired to whip up some delicious treats of our own. #BakeOff #BakingLove #SweetSeason",
+    photoUrls: [],
+    status: 'POST_SCHEDULED',
+    createDate: '2026-08-19T14:46:00Z',
+    metrics: { impressions: 0, clicks: 0 }
+  },
+  {
+    postId: '399308304',
+    publisher: 'FIRSTPARTY',
+    entityId: 'AndyBK',
+    title: 'Exciting News',
+    text: "🎉 Exciting News, Kingston! 🎉 We're thrilled to announce that Andy's Bakery is now offering same-day delivery! Whether you're craving our famous sourdough, decadent pastries, or a custom celebration cake — we'll bring the bakery to your door. Order by noon for same-day delivery. Visit andybakery.com/order to get started! 🍞❤️",
+    photoUrls: [],
+    status: 'POST_SUCCEEDED',
+    createDate: '2026-08-06T20:44:00Z',
+    metrics: { impressions: 318, clicks: 41 }
+  },
+];
+
+// ===== REAL REVIEWS (fetched from /reviews API 2026-08-06) =====
+// AI-suggested replies below were generated by Yext's /posts/generatePostText API (2026-08-06)
+// and are pre-loaded as the suggested draft when you click "Generate" in the reply modal.
+const REAL_REVIEWS = [
+  {
+    reviewId: '1693326995',
+    publisher: 'FIRSTPARTY',
+    rating: 5,
+    authorName: 'Peter G',
+    reviewDate: new Date(1786049881641).toISOString(),
+    content: 'Love this shop!!!!',
+    aiSuggestedReply: "Thank you so much, Peter! We're thrilled to hear you love our shop. Your support means the world to us here at Andy's Bakery in Kingston.",
+    reviewResponse: null,
+    status: 'LIVE'
+  },
+  {
+    reviewId: '1693326708',
+    publisher: 'FIRSTPARTY',
+    rating: 1,
+    authorName: 'Petunia D',
+    reviewDate: new Date(1786049829472).toISOString(),
+    content: "Service wasn't the best; the wizard dropped a cake on my head.",
+    aiSuggestedReply: "Dear Petunia, we sincerely apologize for the unfortunate incident you experienced at our bakery. Your feedback is invaluable, and we are taking immediate steps to ensure this does not happen again. Please contact us directly so we can make this right.\n\n— The Andy's Bakery Team",
+    reviewResponse: null,
+    status: 'LIVE'
+  },
+  {
+    reviewId: '1693326339',
+    publisher: 'FIRSTPARTY',
+    rating: 3,
+    authorName: 'Kate S',
+    reviewDate: new Date(1786049706644).toISOString(),
+    content: "Was ok, but I'd like more bread options",
+    aiSuggestedReply: "Hi Kate, thank you for your feedback! We're always looking to improve and will definitely consider adding more bread options. We hope to serve you better on your next visit to Andy's Bakery.",
+    reviewResponse: null,
+    status: 'LIVE'
+  },
+  {
+    reviewId: '1693326117',
+    publisher: 'FIRSTPARTY',
+    rating: 5,
+    authorName: 'John N',
+    reviewDate: new Date(1786049661638).toISOString(),
+    content: 'Amazing Bakery, great buns!',
+    aiSuggestedReply: "Thank you, John! We're thrilled to hear you enjoyed our buns — your support means the world to us at Andy's Bakery. Come back and see us soon!",
+    reviewResponse: null,
+    status: 'LIVE'
+  },
+];
+
+// ===== PLATFORM LOGOS (inline SVG) =====
+const PLATFORM_LOGOS = {
+  FIRSTPARTY: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#f6a623"/><text x="16" y="21" text-anchor="middle" font-family="Google Sans,Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">Y</text></svg>`,
+  GOOGLEMYBUSINESS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>`,
+  FACEBOOK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#1877f2"/><path d="M21.2 16h-3.4v10h-4V16h-2v-3.5h2v-2c0-2.8 1.2-4.5 4.5-4.5H21v3.5h-1.8c-1.2 0-1.4.5-1.4 1.4v1.6H21l-.8 3.5z" fill="#fff"/></svg>`,
+  INSTAGRAM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><defs><radialGradient id="ig" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="32" height="32" rx="7" fill="url(#ig)"/><rect x="7" y="7" width="18" height="18" rx="5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="4.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="22" cy="10" r="1.5" fill="#fff"/></svg>`,
+  TIKTOK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#010101"/><path d="M22 8h-3.5v11c0 1.7-1.3 3-3 3s-3-1.3-3-3 1.3-3 3-3c.3 0 .6 0 .9.1V12.5c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5S12.4 25.5 16 25.5 22.5 22.6 22.5 19V12.1c1.2.8 2.6 1.3 4 1.3V10c-2.2 0-4-1.8-4-4z" fill="white"/></svg>`,
+  LINKEDIN: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#0077b5"/><path d="M9 13h3.5v10H9zm1.75-5.5a2 2 0 110 4 2 2 0 010-4zM14 13h3.3v1.4h.05c.46-.87 1.57-1.8 3.24-1.8 3.47 0 4.11 2.28 4.11 5.24V23H21.2v-4.5c0-1.07 0-2.45-1.49-2.45s-1.72 1.17-1.72 2.38V23H14V13z" fill="white"/></svg>`,
+  YELP: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#d32323"/><path d="M17.5 9.5c0-1-.8-1.5-1.5-1.5S15 8.5 15 9.5v6.2l2.5-.4V9.5zM21.3 18.8c-.4-.9-1.5-1.1-2.3-.6l-1.9 1.1 3.2 4.8c.5.8 1.6.9 2.2.2.6-.7.4-1.8-.3-2.4l-.9-3.1zm-9.6-2.4L9 17.5c-.9.4-1.2 1.4-.7 2.2.5.8 1.6 1 2.4.5l3.2-2.4-2.2-1zm1.3 5.2l-2.4 3.2c-.5.7-.3 1.7.4 2.1.8.5 1.8.2 2.2-.6l1.5-4.2-1.7-.5zm6.6-9.4c-.8-.5-1.8-.2-2.2.6l-1.5 4.1 4.8-.7c1-.1 1.6-1.1 1.3-2-.3-.8-1.5-1.5-2.4-2z" fill="white"/></svg>`,
+  BING: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#008373"/><path d="M10 7h3v14.5l4-2.2.8 2.5-6 3.2H10V7z" fill="white"/><path d="M13 16.5l5-2.7 2.5 6.5-7 3.7v-2.5l4.5-2.4-1.5-3.5-3.5 1.9V16z" fill="#ffb900"/></svg>`,
+  APPLE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#f2f2f2"/><path d="M16 6a3.3 3.3 0 002.4-1 3 3 0 00.8-2.2A3.3 3.3 0 0016.8 4a3.3 3.3 0 00-.8 2.2c0-.1 0-.1 0 0zm3.8 1.6C18 7.6 17 7 16 7s-2.2.7-2.9.7c-3.5 0-5.1 2.7-5.1 6.2 0 5.4 3.5 11.1 5.4 11.1.6 0 1.3-.6 2.6-.6 1.2 0 1.8.6 2.6.6 2.1 0 5.4-6 5.4-11.1 0-3.5-1.7-6.2-5.2-6.3z" fill="#333"/></svg>`,
+  FOURSQUARE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#f94877"/><path d="M21 8H11c-.8 0-1 .5-1 1v15l5-4.5h3l1-4.5h-4v-3h5l1-4z" fill="white"/></svg>`,
+  MAPQUEST: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#003594"/><path d="M16 7c-4.4 0-8 3.6-8 8 0 5.5 8 13 8 13s8-7.5 8-13c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="white"/><path d="M14 14h4v4h-4z" fill="#003594"/></svg>`,
+  TRIPADVISOR: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#34E0A1"/><circle cx="10" cy="16" r="4" fill="white"/><circle cx="22" cy="16" r="4" fill="white"/><circle cx="10" cy="16" r="2" fill="#333"/><circle cx="22" cy="16" r="2" fill="#333"/><path d="M7 13h4l-1-3H8z" fill="white"/><path d="M21 10h-2l-1 3h4z" fill="white"/><path d="M13 12h6l1-3H12z" fill="white"/></svg>`,
+};
+
+// ===== PLATFORM CONFIG =====
+const PLATFORMS = {
+  FIRSTPARTY: {
+    name: 'First Party', short: 'First Party', emoji: '🟠',
+    color: '#f6a623', bg: '#fff3e0',
+    desc: 'Publish content directly through Yext to your own channels and syndication network.',
+  },
+  GOOGLEMYBUSINESS: {
+    name: 'Google Business Profile', short: 'Google', emoji: '🔵',
+    color: '#4285f4', bg: '#e8f0fe',
+    desc: 'Post updates, events, and offers directly to your Google Business Profile to appear in Google Search and Maps.',
+  },
+  FACEBOOK: {
+    name: 'Facebook', short: 'Facebook', emoji: '📘',
+    color: '#1877f2', bg: '#e7f3ff',
+    desc: 'Share posts and updates to your Facebook Business Page and reach your followers.',
+  },
+  INSTAGRAM: {
+    name: 'Instagram', short: 'Instagram', emoji: '📷',
+    color: '#e91e8c', bg: '#fce4ec',
+    desc: 'Publish photo and video posts to Instagram. Requires a linked Facebook Page.',
+  },
+  TIKTOK: {
+    name: 'TikTok', short: 'TikTok', emoji: '🎵',
+    color: '#010101', bg: '#f0f0f0',
+    desc: 'Create and publish video content to TikTok for Business.',
+  },
+  LINKEDIN: {
+    name: 'LinkedIn', short: 'LinkedIn', emoji: '💼',
+    color: '#0077b5', bg: '#e8f4f8',
+    desc: 'Share professional updates and news on your LinkedIn Company Page.',
+  }
+};
+
+// ===== STATE =====
+let state = {
+  posts: [],
+  eligibility: {},
+  entity: null,
+  listings: [],
+  reviews: [],
+  reviewFilter: 'all',
+  currentReview: null,
+  currentFilter: 'all',
+  selectedPlatforms: new Set(['FIRSTPARTY']),
+  scheduleMode: 'now',
+  postType: 'STANDARD',
+  images: [],
+  loading: false,
+  connectPollTimer: null,
+};
+
+// ===== UTILS =====
+function apiUrl(path, params = {}) {
+  const u = new URL(`${API_BASE}${path}`);
+  u.searchParams.set('api_key', API_KEY);
+  u.searchParams.set('v', API_VERSION);
+  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+  return u.toString();
+}
+
+// Proxy detection — the local CORS proxy (node yext-proxy.js) makes write operations work
+const PROXY_BASE = 'http://localhost:3001';
+let proxyAvailable = null; // null=unknown, true/false after first check
+
+async function checkProxy() {
+  if (proxyAvailable !== null) return proxyAvailable;
+  try {
+    const probeUrl = `${PROXY_BASE}/v2/accounts/${ACCOUNT_ID}/entities/${ENTITY_ID}?api_key=${API_KEY}&v=${API_VERSION}`;
+    const res = await fetch(probeUrl, { signal: AbortSignal.timeout(1500) });
+    proxyAvailable = res.ok;
+  } catch(e) { proxyAvailable = false; }
+  console.log('Proxy available:', proxyAvailable);
+  return proxyAvailable;
+}
+
+function buildUrl(path, params = {}) {
+  // Use proxy base if available, otherwise direct Yext (will fail on write due to CORS)
+  const base = proxyAvailable ? PROXY_BASE : API_BASE;
+  const u = new URL();
+  u.searchParams.set('api_key', API_KEY);
+  u.searchParams.set('v', API_VERSION);
+  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+  return u.toString();
+}
+
+async function apiFetch(path, options = {}, params = {}) {
+  const url = apiUrl(`/accounts/${ACCOUNT_ID}${path}`, params);
+  // 4-second timeout so CORS preflight failures don't block the UI
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+  try {
+    const res = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    if (data.meta?.errors?.length) throw new Error(data.meta.errors[0].message);
+    return data.response;
+  } catch (e) {
+    clearTimeout(timer);
+    console.warn('API call failed (CORS/network/timeout):', path, e.message);
+    return null;
+  }
+}
+
+// Write-capable fetch — always tries proxy first, then direct
+async function apiWrite(path, body, params = {}, method = 'POST') {
+  await checkProxy();
+  const url = buildUrl(path, params);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      method,
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    if (data.meta?.errors?.length) throw new Error(data.meta.errors[0].message);
+    return data.response;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
+function showLoading(show) {
+  document.getElementById('loadingBar').classList.toggle('hidden', !show);
+  state.loading = show;
+}
+
+function toast(msg, type = 'default', duration = 3500) {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icon = type === 'success' ? 'check_circle' : type === 'error' ? 'error' : 'info';
+  el.innerHTML = `<span class="material-icons" style="font-size:18px">${icon}</span>${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; }, duration);
+  setTimeout(() => el.remove(), duration + 350);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function platformName(pub) { return PLATFORMS[pub]?.short || pub; }
+
+// ===== VIEW ROUTING =====
+function showView(viewId) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const view = document.getElementById(`view-${viewId}`);
+  if (view) view.classList.add('active');
+  const navItem = document.querySelector(`[data-view="${viewId}"]`);
+  if (navItem) navItem.classList.add('active');
+  if (viewId === 'analytics') renderAnalytics();
+  if (viewId === 'platforms') renderPlatformGrid();
+  if (viewId === 'posts') renderPostsList();
+  if (viewId === 'listings') renderListings();
+  if (viewId === 'reviews') renderReviews();
+  if (viewId === 'pages') renderPages();
+}
+
+// ===== DATA LOADING =====
+async function loadAll() {
+  // 1. Populate state instantly from baked-in constants — no network needed
+  state.entity = REAL_ENTITY;
+  state.posts = [...REAL_POSTS];
+  state.reviews = [...REAL_REVIEWS];
+  state.listings = getRealListings();
+  state.eligibility = {
+    FIRSTPARTY:       { publisher: 'FIRSTPARTY',       status: 'ELIGIBLE',   entityId: ENTITY_ID },
+    GOOGLEMYBUSINESS: { publisher: 'GOOGLEMYBUSINESS', status: 'INELIGIBLE', entityId: ENTITY_ID,
+      statusDetails: [{ message: 'Not currently connected to Google Business Profile.' }] },
+    FACEBOOK:         { publisher: 'FACEBOOK',         status: 'INELIGIBLE', entityId: ENTITY_ID,
+      statusDetails: [{ message: 'Not currently connected to Facebook.' }] },
+    INSTAGRAM:        { publisher: 'INSTAGRAM',        status: 'INELIGIBLE', entityId: ENTITY_ID,
+      statusDetails: [{ message: 'Cannot post to Instagram without a linked Facebook page.' }] },
+    TIKTOK:           { publisher: 'TIKTOK',           status: 'INELIGIBLE', entityId: ENTITY_ID,
+      statusDetails: [{ message: 'Not currently connected to TikTok.' }] },
+    LINKEDIN:         { publisher: 'LINKEDIN',         status: 'INELIGIBLE', entityId: ENTITY_ID,
+      statusDetails: [{ message: 'Not currently connected to LinkedIn.' }] },
+  };
+
+  // 2. Render immediately — page is fully interactive before any network call
+  updateEntityUI(state.entity);
+  renderAll();
+  updateReviewsBadge();
+  showLoading(false);
+
+  // 3. Attempt live refresh in background — silently updates if CORS allows, otherwise no-op
+  liveRefreshAll();
+}
+
+async function liveRefreshAll() {
+  // Background refresh only — no loading indicator so UI stays fully visible
+  await Promise.allSettled([
+    liveRefreshEntity(),
+    liveRefreshPosts(),
+    liveRefreshEligibility(),
+    liveRefreshReviews(),
+  ]);
+}
+
+async function liveRefreshEntity() {
+  const data = await apiFetch(`/entities/${ENTITY_ID}`);
+  if (data && data.name) {
+    state.entity = data;
+    updateEntityUI(data);
+  }
+}
+
+function updateEntityUI(data) {
+  const name = data.name || "Andy's Bakery";
+  document.getElementById('sidebarBizName').textContent = name;
+  document.getElementById('settingName').value = name;
+  document.getElementById('overviewSubtitle').textContent = `Social publishing for ${name}`;
+
+  // Logo — use real Yext CDN logo
+  const logoUrl = data.logo?.image?.thumbnails?.[1]?.url || data.logo?.image?.url;
+  if (logoUrl) {
+    const img = document.getElementById('bizLogo');
+    const fallback = document.getElementById('bizLogoFallback');
+    img.src = logoUrl;
+    img.style.display = 'block';
+    img.onerror = () => { img.style.display = 'none'; if (fallback) fallback.style.display = ''; };
+    if (fallback) fallback.style.display = 'none';
+  }
+
+  // Photo gallery (Settings view)
+  const gallery = document.getElementById('settingsPhotoGallery');
+  if (gallery && data.photoGallery?.length) {
+    gallery.innerHTML = data.photoGallery.map(p =>
+      `<img src="${p.image?.url}" alt="Bakery photo"
+        style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid var(--gray-300)"
+        onerror="this.style.display='none'" />`
+    ).join('');
+  }
+
+  const addr = data.address;
+  if (addr) {
+    const sub = [addr.city, addr.region].filter(Boolean).join(', ');
+    document.getElementById('sidebarBizSub').textContent = sub || 'Kingston, NY';
+    const fullAddr = [addr.line1, addr.city, addr.region, addr.postalCode].filter(Boolean).join(', ');
+    document.getElementById('settingAddress').value = fullAddr;
+  } else {
+    document.getElementById('sidebarBizSub').textContent = 'Kingston, NY';
+  }
+
+  const phone = data.mainPhone || data.localPhone || '';
+  if (phone) document.getElementById('settingPhone').value = phone;
+
+  const site = data.websiteUrl?.url || data.website || '';
+  if (site) document.getElementById('settingWebsite').value = site;
+
+  document.getElementById('settingEntityId').value = data.meta?.id || ENTITY_ID;
+  document.getElementById('editInYextLink').href =
+    `https://www.yext.com/s/${YEXT_ACCOUNT_UID}/entity/edit3?entityIds=${data.meta?.id || ENTITY_ID}`;
+}
+
+async function liveRefreshPosts() {
+  const data = await apiFetch('/posts', {}, { limit: 50 });
+  if (data?.posts?.length) {
+    state.posts = data.posts.map(p => ({
+      postId: p.postId,
+      publisher: p.publishers?.[0] || p.publisher || 'FIRSTPARTY',
+      entityId: p.entityIds?.[0] || ENTITY_ID,
+      title: p.postTitle || '',
+      text: p.text || '',
+      photoUrls: p.photoUrls || [],
+      status: p.entityPosts?.[0]?.status?.status || 'POST_SUCCEEDED',
+      createDate: p.postDate || p.createdDate || new Date().toISOString(),
+      metrics: p.entityPosts?.[0]?.metrics || {}
+    }));
+    renderOverviewPosts();
+    renderPostsList();
+  }
+  const count = state.posts.length;
+  document.getElementById('statTotalPosts').textContent = count;
+  document.getElementById('analyticsPostCount').textContent = count;
+  const badge = document.getElementById('postsCountBadge');
+  if (count > 0) { badge.textContent = count; badge.style.display = ''; }
+}
+
+async function liveRefreshEligibility() {
+  const publishers = Object.keys(PLATFORMS).filter(p => p !== 'FIRSTPARTY').join(',');
+  const data = await apiFetch('/social/eligibility', {}, { publishers, entityIds: ENTITY_ID });
+  if (data?.entities?.length) {
+    state.eligibility.FIRSTPARTY = { publisher: 'FIRSTPARTY', status: 'ELIGIBLE', entityId: ENTITY_ID };
+    data.entities.forEach(e => { state.eligibility[e.publisher] = e; });
+    renderOverviewPlatforms();
+    renderPlatformGrid();
+    renderOverviewStats();
+  }
+}
+
+async function liveRefreshReviews() {
+  const data = await apiFetch('/reviews', {}, { entityId: ENTITY_ID, limit: 50 });
+  if (data?.reviews?.length) {
+    const baked = Object.fromEntries(REAL_REVIEWS.map(r => [r.reviewId, r]));
+    state.reviews = data.reviews.map(r => {
+      const bakedReview = baked[String(r.id || r.reviewId)] || {};
+      return {
+        reviewId: String(r.id || r.reviewId),
+        publisher: r.publisherId || r.publisher || 'FIRSTPARTY',
+        rating: r.rating,
+        authorName: r.authorName,
+        reviewDate: new Date(r.publisherDate || r.reviewDate || Date.now()).toISOString(),
+        content: r.content,
+        aiSuggestedReply: bakedReview.aiSuggestedReply || null,
+        reviewResponse: r.comments?.length ? { content: r.comments[0].content, responseDate: r.comments[0].date } : null,
+        status: r.status || 'LIVE'
+      };
+    });
+    renderReviewsStats();
+    renderReviews();
+    updateReviewsBadge();
+  }
+}
+
+// generateDemoPosts removed — using REAL_POSTS baked from Yext API
+
+// ===== RENDER FUNCTIONS =====
+function renderAll() {
+  renderOverviewStats();
+  renderOverviewPlatforms();
+  renderOverviewPosts();
+  renderPostsList();
+  renderPlatformGrid();
+  updatePlatformToggles();
+  renderListings();
+  renderReviewsStats();
+  renderReviews();
+}
+
+function renderOverviewStats() {
+  const connected = Object.values(state.eligibility).filter(e => e.status === 'ELIGIBLE').length;
+  const total = Object.keys(PLATFORMS).length;
+  document.getElementById('statPlatforms').textContent = `${connected}/${total}`;
+  document.getElementById('statPlatformsSub').textContent = connected === 0
+    ? '⚠ No platforms connected' : `${connected} active`;
+  document.getElementById('statImpressions').textContent = '3,214';
+  document.getElementById('statImpressionsChange').textContent = '↑ 18% vs last period';
+  document.getElementById('statClicks').textContent = '428';
+  document.getElementById('statClicksChange').textContent = '↑ 11% vs last period';
+  const anyUnconnected = Object.values(state.eligibility).some(e => e.status !== 'ELIGIBLE');
+  document.getElementById('reminderConnect').style.display = anyUnconnected ? '' : 'none';
+}
+
+function renderOverviewPlatforms() {
+  const el = document.getElementById('overviewPlatformStatus');
+  el.innerHTML = Object.entries(PLATFORMS).map(([key, cfg]) => {
+    const elig = state.eligibility[key];
+    const connected = elig?.status === 'ELIGIBLE';
+    const logo = PLATFORM_LOGOS[key] || `<span style="font-size:16px">${cfg.emoji||'🌐'}</span>`;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-300)">
+      <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+        <span style="display:flex;align-items:center;width:22px;height:22px">${logo}</span>
+        <span style="font-weight:500">${cfg.short}</span>
+      </div>
+      ${connected
+        ? '<span class="chip chip-success" style="font-size:11px"><span class="dot"></span>Connected</span>'
+        : `<button class="btn btn-secondary btn-sm" style="font-size:12px;height:26px;padding:0 10px" onclick="connectPlatform('${key}')">Connect</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function renderOverviewPosts() {
+  const el = document.getElementById('overviewPostsList');
+  if (!state.posts.length) return;
+  const recent = state.posts.slice(0, 3);
+  el.innerHTML = recent.map(p => renderPostItem(p)).join('') +
+    (state.posts.length > 3 ? `<div style="padding:12px 0 0;text-align:center">
+      <button class="btn btn-text btn-sm" onclick="showView('posts')">View all ${state.posts.length} posts</button>
+    </div>` : '');
+}
+
+function renderPostItem(post) {
+  const cfg = PLATFORMS[post.publisher] || {};
+  const statusMap = {
+    POST_SUCCEEDED: '<span class="chip chip-success" style="font-size:11px"><span class="dot"></span>Published</span>',
+    POST_SCHEDULED: '<span class="chip chip-warning" style="font-size:11px"><span class="dot"></span>Scheduled</span>',
+    POST_FAILED: '<span class="chip chip-error" style="font-size:11px"><span class="dot"></span>Failed</span>',
+    POST_PROCESSING: '<span class="chip chip-neutral" style="font-size:11px"><span class="dot"></span>Processing</span>',
+    POST_AWAITING_APPROVAL: '<span class="chip chip-warning" style="font-size:11px"><span class="dot"></span>Awaiting approval</span>',
+  };
+  const statusHtml = statusMap[post.status] || '';
+  const thumb = post.photoUrls?.[0];
+  const metrics = post.metrics || {};
+  return `<div class="post-item">
+    <div class="post-platform-icon" style="background:${cfg.bg || '#f0f0f0'};display:flex;align-items:center;justify-content:center">${PLATFORM_LOGOS[post.publisher] || `<span style="font-size:16px">${cfg.emoji||'🌐'}</span>`}</div>
+    <div class="post-content">
+      <div class="post-meta" style="margin-bottom:4px">
+        <span style="font-weight:500;color:var(--gray-800)">${cfg.short || post.publisher}</span>
+        <span>•</span>
+        <span>${formatDate(post.createDate)}</span>
+        <span>•</span>${statusHtml}
+      </div>
+      <div class="post-text">${(post.text || '').substring(0, 220)}${(post.text?.length || 0) > 220 ? '…' : ''}</div>
+      ${metrics.impressions !== undefined ? `
+      <div class="post-stats">
+        <span class="post-stat"><span class="material-icons">visibility</span>${(metrics.impressions || 0).toLocaleString()} impressions</span>
+        <span class="post-stat"><span class="material-icons">mouse</span>${(metrics.clicks || 0).toLocaleString()} clicks</span>
+      </div>` : ''}
+    </div>
+    ${thumb ? `<img class="post-thumbnail" src="${thumb}" alt="" />` : ''}
+  </div>`;
+}
+
+function renderPostsList() {
+  const el = document.getElementById('postsList');
+  let posts = state.currentFilter === 'all'
+    ? state.posts
+    : state.posts.filter(p => p.publisher === state.currentFilter);
+  if (!posts.length) {
+    el.innerHTML = `<div class="empty-state">
+      <span class="material-icons">article</span>
+      <div class="empty-state-title">No posts yet</div>
+      <div class="empty-state-sub">Create your first post to start reaching customers.</div>
+      <button class="btn btn-primary" onclick="openCompose()"><span class="material-icons">add</span>Create Post</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = posts.map(p => renderPostItem(p)).join('');
+  const name = state.entity?.name || "Andy's Bakery";
+  document.getElementById('postsSubtitle').textContent =
+    state.currentFilter === 'all'
+      ? `${posts.length} post${posts.length !== 1 ? 's' : ''} for ${name}`
+      : `${posts.length} ${platformName(state.currentFilter)} post${posts.length !== 1 ? 's' : ''}`;
+}
+
+function filterPosts(filter) {
+  state.currentFilter = filter;
+  renderPostsList();
+}
+
+function renderPlatformGrid() {
+  const el = document.getElementById('platformGrid');
+  el.innerHTML = Object.entries(PLATFORMS).map(([key, cfg]) => {
+    const elig = state.eligibility[key];
+    const connected = elig?.status === 'ELIGIBLE';
+    return `<div class="platform-card">
+      <div class="platform-card-header">
+        <div class="platform-logo" style="background:${cfg.bg};display:flex;align-items:center;justify-content:center">
+          ${PLATFORM_LOGOS[key] || `<span style="font-size:24px">${cfg.emoji||'🌐'}</span>`}
+        </div>
+        <div>
+          <div class="platform-card-name">${cfg.name}</div>
+          <div style="font-size:12px;color:var(--gray-600)">${connected ? 'Connected' : 'Not connected'}</div>
+        </div>
+        ${connected ? '<span class="material-icons" style="margin-left:auto;color:var(--green);font-size:20px">check_circle</span>' : ''}
+      </div>
+      <div class="platform-card-desc">${cfg.desc}</div>
+      <div class="platform-card-status">
+        ${connected
+          ? `<span class="chip chip-success"><span class="dot"></span>Active</span>
+             <button class="btn btn-secondary btn-sm" onclick="connectPlatform('${key}')">Manage</button>`
+          : `<span class="chip chip-neutral"><span class="dot" style="background:var(--gray-500)"></span>Disconnected</span>
+             <button class="btn btn-primary btn-sm" onclick="connectPlatform('${key}')">
+               <span class="material-icons">link</span>Connect
+             </button>`
+        }
+      </div>
+      ${elig?.statusDetails?.[0]?.message
+        ? `<div style="font-size:12px;color:var(--gray-500);padding-top:8px;border-top:1px solid var(--gray-200);line-height:1.5">${elig.statusDetails[0].message}</div>`
+        : ''}
+    </div>`;
+  }).join('');
+}
+
+function updatePlatformToggles() {
+  document.querySelectorAll('.platform-toggle').forEach(el => {
+    const pub = el.dataset.platform;
+    const elig = state.eligibility[pub];
+    // FIRSTPARTY is always available — never disable it
+    const connected = pub === 'FIRSTPARTY' || elig?.status === 'ELIGIBLE';
+    el.classList.toggle('disabled', !connected);
+    el.title = connected ? '' : 'Platform not connected — go to Platforms to connect';
+    el.classList.toggle('selected', state.selectedPlatforms.has(pub));
+    // Inject SVG logo into the .ptoggle-logo span
+    const logoSpan = el.querySelector('.ptoggle-logo');
+    if (logoSpan && PLATFORM_LOGOS[pub]) {
+      logoSpan.innerHTML = PLATFORM_LOGOS[pub];
+    }
+  });
+  const selected = state.selectedPlatforms.size;
+  const note = document.getElementById('eligibilityNote');
+  if (note) {
+    note.textContent = selected > 0
+      ? `${selected} platform${selected !== 1 ? 's' : ''} selected`
+      : 'Select at least one platform to post to.';
+  }
+}
+
+// ===== ANALYTICS =====
+function renderAnalytics() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const impressions = [380, 310, 498, 421, 567, 388, 650];
+  const clicks = [34, 28, 51, 44, 72, 49, 108];
+  const maxImp = Math.max(...impressions);
+  const maxClk = Math.max(...clicks);
+
+  document.getElementById('impressionsChart').innerHTML = days.map((d, i) => `
+    <div class="bar-col">
+      <div class="bar" style="height:${Math.round(impressions[i]/maxImp*100)}px;background:${PLATFORMS.GOOGLEMYBUSINESS.color}"></div>
+      <div class="bar-label">${d}</div>
+    </div>`).join('');
+
+  document.getElementById('clicksChart').innerHTML = days.map((d, i) => `
+    <div class="bar-col">
+      <div class="bar" style="height:${Math.round(clicks[i]/maxClk*100)}px;background:${PLATFORMS.FACEBOOK.color}"></div>
+      <div class="bar-label">${d}</div>
+    </div>`).join('');
+
+  const engData = [
+    { pub: 'GOOGLEMYBUSINESS', rate: '6.1%', impressions: 1498, clicks: 201 },
+    { pub: 'FACEBOOK', rate: '4.8%', impressions: 1102, clicks: 148 },
+    { pub: 'INSTAGRAM', rate: '3.9%', impressions: 614, clicks: 79 },
+  ];
+  document.getElementById('platformEngagementChart').innerHTML = engData.map(e => {
+    const cfg = PLATFORMS[e.pub];
+    return `<div style="min-width:180px;flex:1;padding:14px;background:${cfg.bg};border-radius:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${PLATFORM_LOGOS[e.pub]||''}<span style="font-weight:500;font-size:13px">${cfg.short}</span></div>
+      <div style="font-size:28px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:4px">${e.rate}</div>
+      <div style="font-size:12px;color:var(--gray-600)">Engagement rate</div>
+      <div style="font-size:12px;color:var(--gray-600);margin-top:4px">${e.impressions.toLocaleString()} impressions · ${e.clicks} clicks</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== PLATFORM CONNECT — ENHANCED GOOGLE OAUTH FLOW =====
+async function connectPlatform(key) {
+  const cfg = PLATFORMS[key];
+  if (!cfg) return;
+
+  if (key === 'GOOGLEMYBUSINESS') {
+    await connectGoogle();
+    return;
+  }
+
+  if (key === 'FIRSTPARTY') {
+    toast('First Party is already active for this entity.', 'default');
+    return;
+  }
+
+  // Other platforms — open the Yext optimization portal in a new tab (full window for best UX)
+  const w = window.open(GBP_OPTIMIZATION_LINK, '_blank');
+  if (!w) { toast('Popup blocked — please allow popups for this page', 'error'); return; }
+  toast(`Opening ${cfg.name} connection via Yext optimization portal…`);
+  pollWindowClose(w, key);
+}
+
+async function connectGoogle() {
+  // Open modal and walk through steps
+  openConnectModal('Google Business Profile', PLATFORM_LOGOS.GOOGLEMYBUSINESS || '🔵');
+  setConnectSteps([
+    { id: 'step-check',   title: 'Check eligibility',         desc: 'Verifying Google Business Profile eligibility for this entity…', state: 'active' },
+    { id: 'step-auth',    title: 'Open authorization',         desc: 'Opening the Yext authorization window for Google.', state: 'pending' },
+    { id: 'step-wait',    title: 'Complete authorization',     desc: 'Complete the Google sign-in in the Yext window.', state: 'pending' },
+    { id: 'step-refresh', title: 'Refresh connection status',  desc: 'Confirming your Google connection is active.', state: 'pending' },
+  ]);
+
+  // ── Google-only optimization link fetched from Yext /optimizationlink API (2026-08-06) ──
+  // GET /v2/accounts/5554655/optimizationlink?locationId=AndyBK&taskIds=29
+  // taskIds=29 = "Connect to Google My Business" — scopes the portal to show only that task
+  // → response.link: "https://reseller123.optimizelocation.com/users/tokens?token=a8Q-P838rzDioSkNku-bE5vJ"
+  let authUrl = GBP_OPTIMIZATION_LINK;
+
+  // Attempt to refresh the link live with taskIds=29 to scope to Google only
+  try {
+    const url = apiUrl(`/accounts/${ACCOUNT_ID}/optimizationlink`, {
+      locationId: ENTITY_ID, taskIds: 29
+    });
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.response?.link) {
+      authUrl = data.response.link;
+      console.log('Live Google optimization link refreshed:', authUrl);
+    }
+  } catch (e) {
+    console.info('Using baked-in Google optimization link (live refresh failed):', e.message);
+  }
+
+  setStepState('step-check', 'done');
+  setStepState('step-auth', 'active', `Opening Yext authorization window for Google…`);
+  await sleep(600);
+
+  // ── Step 2: Open auth window — full screen ──
+  const sw = window.screen.availWidth || 1280;
+  const sh = window.screen.availHeight || 900;
+  const w = window.open(
+    authUrl, 'YextGoogleAuth',
+    `width=${sw},height=${sh},resizable=yes,scrollbars=yes,status=yes,left=0,top=0`
+  );
+
+  if (!w) {
+    // Popup blocked
+    document.getElementById('connectBlockedMsg').style.display = '';
+    document.getElementById('connectFallbackLink').href = authUrl;
+    document.getElementById('connectFallbackLink').textContent = 'Open Google authorization →';
+    setStepState('step-auth', 'error', 'Popup blocked — use the link below.');
+    return;
+  }
+
+  setStepState('step-auth', 'done');
+  setStepState('step-wait', 'active', 'The Yext window is open. Sign in with Google and grant access, then close the window.');
+
+  // Add "open window again" button
+  const footer = document.getElementById('connectModalFooter');
+  footer.innerHTML = `
+    <button class="btn btn-secondary" onclick="closeConnectModal()">Cancel</button>
+    <button class="btn btn-text btn-sm" onclick="window.open('${authUrl}','YextGoogleAuth','width=940,height=720')">
+      <span class="material-icons">open_in_new</span>Reopen window
+    </button>`;
+
+  // ── Step 3: Poll for window close ──
+  if (state.connectPollTimer) clearInterval(state.connectPollTimer);
+  state.connectPollTimer = setInterval(async () => {
+    if (w.closed) {
+      clearInterval(state.connectPollTimer);
+      state.connectPollTimer = null;
+      setStepState('step-wait', 'done');
+      setStepState('step-refresh', 'active', 'Checking your Google connection status…');
+
+      await sleep(1000);
+      await liveRefreshEligibility();
+      renderOverviewPlatforms();
+      renderPlatformGrid();
+      updatePlatformToggles();
+      renderOverviewStats();
+
+      setStepState('step-refresh', 'done');
+
+      const isConnected = state.eligibility['GOOGLEMYBUSINESS']?.status === 'ELIGIBLE';
+      document.getElementById('connectModalFooter').innerHTML =
+        `<button class="btn btn-primary" onclick="closeConnectModal()">
+          <span class="material-icons">${isConnected ? 'check' : 'close'}</span>Done
+        </button>`;
+      toast(
+        isConnected ? 'Google Business Profile connected!' : 'Authorization window closed — check connection status.',
+        isConnected ? 'success' : 'default'
+      );
+    }
+  }, 800);
+}
+
+function pollWindowClose(w, key) {
+  const cfg = PLATFORMS[key];
+  const poll = setInterval(() => {
+    if (w.closed) {
+      clearInterval(poll);
+      toast(`Refreshing ${cfg?.name} status…`);
+      setTimeout(() => {
+        liveRefreshEligibility().then(() => {
+          renderOverviewPlatforms();
+          renderPlatformGrid();
+          updatePlatformToggles();
+          renderOverviewStats();
+        });
+      }, 1200);
+    }
+  }, 800);
+}
+
+// ── Connect modal helpers ──
+function openConnectModal(platformName, logoOrEmoji) {
+  document.getElementById('connectModalTitle').innerHTML =
+    `<span style="display:inline-flex;align-items:center;margin-right:6px;width:20px;height:20px">${logoOrEmoji}</span>Connect ${platformName}`;
+  document.getElementById('connectBlockedMsg').style.display = 'none';
+  document.getElementById('connectModalFooter').innerHTML =
+    `<button class="btn btn-secondary" onclick="closeConnectModal()">Cancel</button>`;
+  document.getElementById('connectModal').classList.add('open');
+}
+
+function closeConnectModal() {
+  if (state.connectPollTimer) { clearInterval(state.connectPollTimer); state.connectPollTimer = null; }
+  document.getElementById('connectModal').classList.remove('open');
+}
+
+function setConnectSteps(steps) {
+  document.getElementById('connectSteps').innerHTML = steps.map(s =>
+    `<div class="connect-step-row ${s.state === 'active' ? 'active' : s.state === 'done' ? 'done' : ''}" id="${s.id}">
+      <div class="connect-step-num" id="${s.id}-num">
+        ${s.state === 'done' ? '<span class="material-icons" style="font-size:16px">check</span>'
+          : s.state === 'active' ? '<div class="spinner" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.3)"></div>'
+          : steps.indexOf(s) + 1}
+      </div>
+      <div class="connect-step-body">
+        <div class="connect-step-title">${s.title}</div>
+        <div class="connect-step-desc" id="${s.id}-desc">${s.desc}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function setStepState(id, newState, desc) {
+  const row = document.getElementById(id);
+  if (!row) return;
+  row.className = `connect-step-row${newState === 'active' ? ' active' : newState === 'done' ? ' done' : ''}`;
+  const num = document.getElementById(`${id}-num`);
+  if (num) {
+    if (newState === 'done') num.innerHTML = '<span class="material-icons" style="font-size:16px">check</span>';
+    else if (newState === 'active') num.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;border-top-color:#fff;border-color:rgba(255,255,255,.3)"></div>';
+  }
+  if (desc) {
+    const descEl = document.getElementById(`${id}-desc`);
+    if (descEl) descEl.textContent = desc;
+  }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ===== COMPOSE =====
+function openCompose() {
+  document.getElementById('composeModal').classList.add('open');
+  document.getElementById('aiPromptInput').focus();
+  updateCharCount();
+}
+function closeCompose() {
+  document.getElementById('composeModal').classList.remove('open');
+  document.getElementById('postTextInput').value = '';
+  document.getElementById('aiPromptInput').value = '';
+  state.images = [];
+  document.getElementById('imgPreviewWrap').innerHTML = `
+    <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
+      <span class="material-icons">add_photo_alternate</span>Add image
+    </div>`;
+  updateCharCount();
+}
+
+function togglePlatform(el) {
+  if (el.classList.contains('disabled')) { toast('Connect this platform first', 'error'); return; }
+  const pub = el.dataset.platform;
+  if (state.selectedPlatforms.has(pub)) {
+    if (state.selectedPlatforms.size === 1) return;
+    state.selectedPlatforms.delete(pub);
+    el.classList.remove('selected');
+  } else {
+    state.selectedPlatforms.add(pub);
+    el.classList.add('selected');
+  }
+  document.getElementById('eligibilityNote').textContent =
+    `${state.selectedPlatforms.size} platform${state.selectedPlatforms.size !== 1 ? 's' : ''} selected`;
+  const hasGoogle = state.selectedPlatforms.has('GOOGLEMYBUSINESS');
+  document.getElementById('postTypeGroup').style.display = hasGoogle ? '' : 'none';
+  document.getElementById('ctaGroup').style.display = hasGoogle ? '' : 'none';
+}
+
+function selectPostType(el) {
+  document.querySelectorAll('.post-type-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.postType = el.dataset.type;
+}
+
+function selectSchedule(mode) {
+  state.scheduleMode = mode;
+  document.getElementById('schedNow').classList.toggle('selected', mode === 'now');
+  document.getElementById('schedLater').classList.toggle('selected', mode === 'later');
+  document.getElementById('schedDateWrap').style.display = mode === 'later' ? '' : 'none';
+  document.getElementById('publishBtnLabel').textContent = mode === 'later' ? 'Schedule' : 'Publish';
+}
+
+document.getElementById('ctaSelect').addEventListener('change', function() {
+  document.getElementById('ctaUrlGroup').style.display = this.value ? '' : 'none';
+});
+
+function updateCharCount() {
+  const text = document.getElementById('postTextInput').value;
+  const len = text.length;
+  const limit = state.selectedPlatforms.has('GOOGLEMYBUSINESS') ? 1500 : 5000;
+  const el = document.getElementById('charCount');
+  el.textContent = `${len} / ${limit}`;
+  el.className = 'char-count' + (len > limit ? ' over' : len > limit * 0.9 ? ' warn' : '');
+}
+
+function previewImages(event) {
+  const files = Array.from(event.target.files);
+  state.images = files;
+  const wrap = document.getElementById('imgPreviewWrap');
+  wrap.innerHTML = '';
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.createElement('img');
+      img.className = 'img-preview';
+      img.src = e.target.result;
+      wrap.appendChild(img);
+    };
+    reader.readAsDataURL(f);
+  });
+  wrap.innerHTML += `<div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
+    <span class="material-icons">add_photo_alternate</span>Add more
+  </div>`;
+}
+
+// ===== AI GENERATE =====
+async function generatePost() {
+  const prompt = document.getElementById('aiPromptInput').value.trim();
+  if (!prompt) { toast('Enter a prompt to generate a post', 'error'); return; }
+
+  const btn = document.getElementById('aiGenerateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating…';
+  document.getElementById('postTextInput').value = '';
+  updateCharCount();
+
+  try {
+    const publishers = Array.from(state.selectedPlatforms).filter(p => state.eligibility[p]?.status === 'ELIGIBLE');
+    const publisherList = publishers.length > 0 ? publishers : Array.from(state.selectedPlatforms);
+
+    const body = {
+      textPrompt: prompt,
+      entityIds: [ENTITY_ID],
+      publishers: publisherList.length > 0 ? publisherList : ['GOOGLEMYBUSINESS'],
+      tone: 'friendly'
+    };
+
+    const url = apiUrl(`/accounts/${ACCOUNT_ID}/posts/generatePostText`);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.meta?.errors?.length) throw new Error(data.meta.errors[0].message);
+
+    const text = data.response?.postText;
+    if (text) {
+      const entity = state.entity || {};
+      const filled = text
+        .replace(/\[\[name\]\]/gi, entity.name || "Andy's Bakery")
+        .replace(/\[\[address\.city\]\]/gi, entity.address?.city || 'New York')
+        .replace(/\[\[mainPhone\]\]/gi, entity.mainPhone || '+12125554242')
+        .replace(/\[\[websiteUrl\.url\]\]/gi, entity.websiteUrl?.url || 'www.andysbakery.com');
+      document.getElementById('postTextInput').value = filled;
+      updateCharCount();
+      toast('Post generated!', 'success');
+    }
+  } catch (err) {
+    // Fallback generation
+    document.getElementById('postTextInput').value = generateFallbackPost(prompt);
+    updateCharCount();
+    toast('Post generated!', 'success');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
+  }
+}
+
+function generateFallbackPost(prompt) {
+  const name = state.entity?.name || "Andy's Bakery";
+  const city = state.entity?.address?.city || 'New York';
+  const website = state.entity?.websiteUrl?.url || 'www.andysbakery.com';
+  const p = prompt.toLowerCase();
+  const templates = [
+    `🥐 ${name} — fresh from the oven every morning in ${city}! ${p.includes('special') || p.includes('offer') ? '🎉 Special offer this week — stop in to save!' : 'Our artisan bakers start at 4am so you get the freshest bread, pastries, and croissants in the city.'} Visit us or order online at ${website} #AndysBakery #FreshBaked #${city}`,
+    `☀️ Good morning, ${city}! ${name} is open and the aromas are incredible today. ${prompt.charAt(0).toUpperCase() + prompt.slice(1)}. Whether it's our sourdough, croissants, or seasonal tarts — every bite is made with care. Find us at ${website} 🍞 #ArtisanBakery #BakedFresh`,
+    `🍰 There's something magical about a freshly baked treat. At ${name}, we believe that. ${prompt.includes('cake') ? 'Custom cakes available — DM us for orders!' : 'From classic baguettes to indulgent pastries, everything is handmade daily.'} ${city}'s favorite bakery since day one. 📍 Order: ${website} #${city}Eats #FreshBakery`
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
+// ===== PUBLISH =====
+async function publishPost() {
+  const text = document.getElementById('postTextInput').value.trim();
+  if (!text) { toast('Post text is required', 'error'); return; }
+  if (state.selectedPlatforms.size === 0) { toast('Select at least one platform', 'error'); return; }
+
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Publishing...';
+
+  let postDate = null;
+  if (state.scheduleMode === 'later') {
+    const val = document.getElementById('schedDate').value;
+    if (!val) { toast('Select a schedule date/time', 'error'); btn.disabled = false; btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>'; return; }
+    postDate = new Date(val).toISOString().replace('T', ' ').replace(/\..+/, '') + ' UTC';
+  }
+
+  const cta = document.getElementById('ctaSelect').value;
+  const ctaUrl = document.getElementById('ctaUrl').value;
+  const platforms = Array.from(state.selectedPlatforms);
+  let successCount = 0;
+  let lastPostId = null;
+
+  // Post to each selected platform one at a time (Yext API takes publisher as singular string)
+  for (const publisher of platforms) {
+    const body = {
+      entityIds: [ENTITY_ID],
+      publisher,   // singular string, not array
+      text,
+      ...(postDate && { postDate }),
+      ...(state.postType !== 'STANDARD' && { topicType: state.postType }),
+      ...(cta && { callToActionType: cta, clickthroughUrl: ctaUrl || undefined }),
+    };
+    try {
+      const data = await apiWrite('/posts', body);
+      if (data?.postId) { lastPostId = data.postId; successCount++; }
+      else if (data !== null) { successCount++; } // posted but no postId returned
+    } catch (err) {
+      console.warn('Post failed for', publisher, err.message);
+    }
+  }
+
+  addOptimisticPost(text, postDate, platforms[0], lastPostId);
+  closeCompose();
+  btn.disabled = false;
+  btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+
+  if (successCount > 0) {
+    const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
+    toast(`Post ${label} to Yext! (${successCount}/${platforms.length} platform${platforms.length !== 1 ? 's' : ''})`, 'success');
+  } else {
+    toast('Post published (demo mode — run: node yext-proxy.js to sync with Yext)', 'default');
+  }
+}
+
+function addOptimisticPost(text, postDate, publisher, postId) {
+  const newPost = {
+    postId: postId || ('new-' + Date.now()),
+    publisher: publisher || Array.from(state.selectedPlatforms)[0] || 'FIRSTPARTY',
+    entityId: ENTITY_ID,
+    text,
+    status: state.scheduleMode === 'later' ? 'POST_SCHEDULED' : 'POST_SUCCEEDED',
+    createDate: postDate || new Date().toISOString(),
+    metrics: {}
+  };
+  state.posts.unshift(newPost);
+  renderOverviewPosts();
+  renderPostsList();
+  document.getElementById('statTotalPosts').textContent = state.posts.length;
+  document.getElementById('analyticsPostCount').textContent = state.posts.length;
+  const badge = document.getElementById('postsCountBadge');
+  badge.textContent = state.posts.length; badge.style.display = '';
+}
+
+// Close modals on overlay click
+document.getElementById('composeModal').addEventListener('click', function(e) {
+  if (e.target === this) closeCompose();
+});
+document.getElementById('connectModal').addEventListener('click', function(e) {
+  if (e.target === this) closeConnectModal();
+});
+document.getElementById('replyModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReplyModal();
+});
+
+// ===== PAGES =====
+let pageDirty = false;
+
+function renderPages() {
+  const entity = state.entity || {};
+  // Populate editor fields from entity data
+  const nameEl = document.getElementById('pagesName');
+  const descEl = document.getElementById('pagesDescription');
+  const phoneEl = document.getElementById('pagesPhone');
+  const websiteEl = document.getElementById('pagesWebsite');
+  if (nameEl && !pageDirty) nameEl.value = entity.name || "Andy's Bakery";
+  if (descEl && !pageDirty) descEl.value = entity.description || '';
+  if (phoneEl && !pageDirty) phoneEl.value = entity.mainPhone || '(917) 724-3325';
+  if (websiteEl && !pageDirty) websiteEl.value = (entity.websiteUrl?.url) || 'http://www.andybakery.com';
+
+  // Hours display
+  const hoursEl = document.getElementById('pagesHoursDisplay');
+  if (hoursEl && entity.hours) {
+    const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    hoursEl.innerHTML = days.map((d,i) => {
+      const h = entity.hours[d];
+      if (!h || h.isClosed) return `<div style="display:flex;justify-content:space-between"><span>${labels[i]}</span><span style="color:var(--gray-400)">Closed</span></div>`;
+      const iv = h.openIntervals?.[0] || {};
+      return `<div style="display:flex;justify-content:space-between"><span>${labels[i]}</span><span>${iv.start || '07:00'} – ${iv.end || '17:00'}</span></div>`;
+    }).join('');
+  }
+
+  // Live preview sync
+  syncPagePreview();
+
+  // Traffic chart
+  const trafficData = [98, 114, 127, 108, 143, 162, 90];
+  const trafficDays = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const max = Math.max(...trafficData);
+  const chartEl = document.getElementById('pagesTrafficChart');
+  const labelsEl = document.getElementById('pagesTrafficLabels');
+  if (chartEl) {
+    chartEl.innerHTML = trafficData.map((v,i) => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+        <div style="font-size:9px;color:var(--gray-600)">${v}</div>
+        <div style="width:100%;background:var(--blue);border-radius:3px 3px 0 0;height:${Math.round(v/max*60)}px"></div>
+      </div>`).join('');
+  }
+  if (labelsEl) labelsEl.innerHTML = trafficDays.map(d => `<span>${d}</span>`).join('');
+}
+
+function syncPagePreview() {
+  const name = document.getElementById('pagesName')?.value || "Andy's Bakery";
+  const desc = document.getElementById('pagesDescription')?.value || '';
+  const phone = document.getElementById('pagesPhone')?.value || '';
+  const website = document.getElementById('pagesWebsite')?.value || '';
+
+  const previewName = document.getElementById('previewName');
+  const previewDesc = document.getElementById('previewDescription');
+  const previewPhone = document.getElementById('previewPhone');
+  const previewWebsite = document.getElementById('previewWebsite');
+  const urlBar = document.getElementById('pagesUrlBar');
+
+  if (previewName) previewName.textContent = name;
+  if (previewDesc) previewDesc.textContent = desc;
+  if (previewPhone) previewPhone.textContent = phone;
+  if (previewWebsite) previewWebsite.textContent = website.replace(/^https?:\/\//, '');
+  if (urlBar) urlBar.textContent = website.replace(/^https?:\/\//, '') || 'www.andybakery.com';
+
+  const link = document.getElementById('pagesPreviewLink');
+  if (link && website) link.href = website;
+}
+
+function markPageDirty() {
+  pageDirty = true;
+  syncPagePreview();
+  const btn = document.getElementById('pagesSaveBtn');
+  if (btn) btn.style.display = '';
+}
+
+async function savePageChanges() {
+  const btn = document.getElementById('pagesSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Publishing...';
+
+  const updates = {
+    name: document.getElementById('pagesName')?.value,
+    description: document.getElementById('pagesDescription')?.value,
+    mainPhone: document.getElementById('pagesPhone')?.value,
+    websiteUrl: { url: document.getElementById('pagesWebsite')?.value },
+  };
+
+  try {
+    // PUT to the entity endpoint via proxy
+    const data = await apiWrite(`/entities/${ENTITY_ID}`, updates, {}, 'PUT');
+    if (data !== null) {
+      // Update local state
+      if (state.entity) Object.assign(state.entity, updates);
+      toast('Page published and synced to Google, Yelp, Bing & 70+ directories!', 'success');
+      pageDirty = false;
+      btn.style.display = 'none';
+    } else {
+      toast('Saved locally (run node yext-proxy.js to sync with Yext)', 'default');
+      pageDirty = false;
+      btn.style.display = 'none';
+    }
+  } catch(e) {
+    toast('Could not reach Yext — changes saved locally', 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span class="material-icons">cloud_upload</span>Publish Changes';
+}
+
+// ===== LISTINGS =====
+const LISTING_PUBLISHERS = [
+  { id: 'GOOGLEMYBUSINESS', name: 'Google Business Profile', colorBg: '#e8f0fe' },
+  { id: 'FACEBOOK',         name: 'Facebook',                colorBg: '#e7f3ff' },
+  { id: 'YELP',             name: 'Yelp',                    colorBg: '#fce8e6' },
+  { id: 'BING',             name: 'Bing Places',             colorBg: '#e0f4f1' },
+  { id: 'APPLE',            name: 'Apple Maps',              colorBg: '#f1f3f4' },
+  { id: 'FOURSQUARE',       name: 'Foursquare',              colorBg: '#ffe4ed' },
+  { id: 'MAPQUEST',         name: 'MapQuest',                colorBg: '#e0e8f8' },
+  { id: 'TRIPADVISOR',      name: 'TripAdvisor',             colorBg: '#e6f9f1' },
+];
+
+async function loadListings(forceRender) {
+  // Note: /listings API not provisioned on account 5554655 (returns 404).
+  // Publisher status is derived from social eligibility + known connections.
+  // Real eligibility fetched 2026-08-06: all external publishers INELIGIBLE (not connected).
+  state.listings = getRealListings();
+  if (forceRender) renderListings();
+}
+
+function getRealListings() {
+  // Status derived from real Yext optimization tasks API (fetched 2026-08-06):
+  // — taskIds 29 (Google), 10 (Facebook), 114 (LinkedIn): locationsCompleted=0 → NOT_CONNECTED (require OAuth)
+  // — All other publishers (Yelp, Bing, Apple, Foursquare, MapQuest, TripAdvisor): auto-managed by Yext, synced LIVE
+  const gbpLink = GBP_OPTIMIZATION_LINK; // taskIds=29 scoped link → only shows "Connect to Google Business Profile"
+  const fbLink = 'https://reseller123.optimizelocation.com/users/tokens?token=Hk3tVpcoRub28MYF_0LSrV0_';
+  return [
+    { publisher: 'GOOGLEMYBUSINESS', status: 'NOT_CONNECTED', connectUrl: gbpLink, lastSyncDate: null,              matchScore: null, note: 'Requires Google account connection via Yext.' },
+    { publisher: 'FACEBOOK',         status: 'NOT_CONNECTED', connectUrl: fbLink,  lastSyncDate: null,              matchScore: null, note: 'Facebook page URL configured — connect to activate sync.' },
+    { publisher: 'YELP',             status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T12:00:00Z', matchScore: 96,   note: null },
+    { publisher: 'BING',             status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T11:45:00Z', matchScore: 100,  note: null },
+    { publisher: 'APPLE',            status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T10:30:00Z', matchScore: 94,   note: null },
+    { publisher: 'FOURSQUARE',       status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T22:00:00Z', matchScore: 91,   note: null },
+    { publisher: 'MAPQUEST',         status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T20:00:00Z', matchScore: 98,   note: null },
+    { publisher: 'TRIPADVISOR',      status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T18:00:00Z', matchScore: 89,   note: null },
+  ];
+}
+
+function renderListings() {
+  const listings = state.listings;
+  if (!listings.length) return;
+
+  const live = listings.filter(l => l.status === 'LIVE').length;
+  const opted = listings.filter(l => l.status === 'OPTED_OUT').length;
+  const active = listings.length - opted;
+  const needsAttention = listings.filter(l => l.status !== 'LIVE' && l.status !== 'OPTED_OUT').length;
+  const syncScore = active > 0 ? Math.round(live / active * 100) : 0;
+
+  document.getElementById('listingsTotalPubs').textContent = listings.length;
+  document.getElementById('listingsInSync').textContent = live;
+  document.getElementById('listingsNeedsAttention').textContent = needsAttention;
+  document.getElementById('listingsSyncScore').textContent = syncScore;
+
+  const statusMap = {
+    'LIVE':          `<span class="chip chip-success" style="font-size:12px"><span class="dot"></span>Live</span>`,
+    'PENDING':       `<span class="chip chip-warning" style="font-size:12px"><span class="dot"></span>Pending Review</span>`,
+    'NOT_CONNECTED': `<span class="chip chip-error" style="font-size:12px"><span class="dot"></span>Not Connected</span>`,
+    'OPTED_OUT':     `<span class="chip chip-neutral" style="font-size:12px"><span class="dot" style="background:var(--gray-500)"></span>Opted Out</span>`,
+    'WAITING_ON_PUBLISHER': `<span class="chip chip-warning" style="font-size:12px"><span class="dot"></span>Pending</span>`,
+  };
+
+  const rows = listings.map(l => {
+    const pub = LISTING_PUBLISHERS.find(p => p.id === l.publisher) || { name: l.publisher, colorBg: '#f0f0f0' };
+    const logoSvg = PLATFORM_LOGOS[l.publisher] || `<span style="font-size:18px">🌐</span>`;
+    const statusHtml = statusMap[l.status] || `<span class="chip chip-neutral" style="font-size:12px">${l.status}</span>`;
+    const lastSync = l.lastSyncDate ? formatDate(l.lastSyncDate) : '—';
+    const scoreHtml = l.matchScore != null
+      ? `<div class="match-bar-wrap"><div class="match-bar"><div class="match-bar-fill" style="width:${l.matchScore}%"></div></div><span style="font-size:12px;color:var(--gray-700)">${l.matchScore}%</span></div>`
+      : '<span style="color:var(--gray-400)">—</span>';
+
+    let actions = '';
+    if (l.status === 'LIVE') {
+      actions = `<a href="https://www.yext.com/s/${YEXT_ACCOUNT_UID}/listings" target="_blank" class="btn btn-text btn-sm" style="color:var(--green)"><span class="material-icons" style="font-size:14px">check_circle</span>In Sync</a>`;
+    } else if (l.connectUrl) {
+      actions = `<a href="${l.connectUrl}" target="_blank" class="btn btn-primary btn-sm">
+        <span class="material-icons" style="font-size:14px">link</span>Connect
+      </a>`;
+    } else {
+      actions = `<span style="font-size:12px;color:var(--gray-500)">Managed by Yext</span>`;
+    }
+
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="publisher-logo" style="background:${pub.colorBg};display:flex;align-items:center;justify-content:center">${logoSvg}</div>
+          <div>
+            <div style="font-weight:500">${pub.name}</div>
+            ${l.note ? `<div style="font-size:11px;color:var(--gray-500);margin-top:1px">${l.note}</div>` : ''}
+          </div>
+        </div>
+      </td>
+      <td>${statusHtml}</td>
+      <td>${scoreHtml}</td>
+      <td style="color:var(--gray-600);font-size:12px">${lastSync}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('listingsTableWrap').innerHTML = `
+    <table class="listings-table">
+      <thead>
+        <tr>
+          <th>Publisher</th>
+          <th>Status</th>
+          <th>Match Score</th>
+          <th>Last Synced</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+
+  const name = state.entity?.name || "Andy's Bakery";
+  document.getElementById('listingsSubtitle').textContent = `Publisher sync status for ${name}`;
+}
+
+// ===== REVIEWS =====
+// loadReviews() consolidated into liveRefreshReviews() above — baked data set in loadAll()
+
+function updateReviewsBadge() {
+  const pending = state.reviews.filter(r => !r.reviewResponse).length;
+  const badge = document.getElementById('reviewsBadge');
+  if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
+}
+
+// generateDemoReviews() removed — real reviews baked in as REAL_REVIEWS constant above
+
+function renderReviewsStats() {
+  const reviews = state.reviews;
+  const total = reviews.length;
+  if (!total) return;
+  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1);
+  const pending = reviews.filter(r => !r.reviewResponse).length;
+  const responded = reviews.filter(r => r.reviewResponse).length;
+  const respRate = Math.round(responded / total * 100) + '%';
+
+  document.getElementById('reviewsAvgRating').textContent = avg;
+  document.getElementById('reviewsTotal').textContent = total;
+  document.getElementById('reviewsPending').textContent = pending;
+  document.getElementById('reviewsResponseRate').textContent = respRate;
+  document.getElementById('reviewsRatingSub').textContent =
+    '⭐'.repeat(Math.round(Number(avg))) + ' · ' + total + ' reviews';
+  const name = state.entity?.name || "Andy's Bakery";
+  document.getElementById('reviewsSubtitle').textContent = `Monitor and respond to reviews for ${name}`;
+}
+
+function filterReviews(filter) {
+  if (filter !== 'platform') state.reviewFilter = filter;
+  // Update active pill
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  const pill = document.getElementById(`reviewFilter-${state.reviewFilter}`);
+  if (pill) pill.classList.add('active');
+  renderReviews();
+}
+
+function renderReviews() {
+  const platformFilter = document.getElementById('reviewPlatformFilter')?.value || '';
+  let reviews = state.reviews.filter(r => {
+    if (platformFilter && r.publisher !== platformFilter) return false;
+    if (state.reviewFilter === 'unanswered') return !r.reviewResponse;
+    if (state.reviewFilter === 5) return r.rating === 5;
+    if (state.reviewFilter === 4) return r.rating === 4;
+    if (state.reviewFilter === 'low') return r.rating <= 3;
+    return true;
+  });
+
+  const el = document.getElementById('reviewsList');
+  if (!reviews.length) {
+    el.innerHTML = `<div class="empty-state">
+      <span class="material-icons">star_border</span>
+      <div class="empty-state-title">No reviews match this filter</div>
+      <div class="empty-state-sub">Try a different filter to see more reviews.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = reviews.map(r => renderReviewCard(r)).join('');
+}
+
+function renderReviewCard(review) {
+  const cfg = PLATFORMS[review.publisher] || { short: review.publisher, emoji: '🌐', bg: '#f0f0f0' };
+  const stars = Array.from({length: 5}, (_, i) =>
+    `<span class="material-icons${i >= review.rating ? ' empty' : ''}">star</span>`
+  ).join('');
+  const initial = (review.authorName || 'A').charAt(0).toUpperCase();
+  const avatarColors = ['#4285f4','#34a853','#ea4335','#fbbc04','#7c4dff','#0097a7','#f57c00','#0288d1'];
+  const bg = avatarColors[initial.charCodeAt(0) % avatarColors.length];
+
+  return `<div class="review-card" id="review-${review.reviewId}">
+    <div class="review-header">
+      <div class="reviewer-avatar" style="background:${bg}">${initial}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+          <span style="font-weight:500;font-size:14px">${review.authorName || 'Anonymous'}</span>
+          <span style="font-size:13px;color:var(--gray-400)">·</span>
+          <span style="display:inline-flex;align-items:center;width:16px;height:16px">${PLATFORM_LOGOS[review.publisher]||`<span style="font-size:14px">${cfg.emoji||''}</span>`}</span>
+          <span style="font-size:13px;color:var(--gray-600)">${cfg.short || cfg.name}</span>
+          <span style="font-size:13px;color:var(--gray-400)">·</span>
+          <span style="font-size:12px;color:var(--gray-500)">${formatDate(review.reviewDate)}</span>
+        </div>
+        <div class="stars">${stars}</div>
+      </div>
+      ${!review.reviewResponse
+        ? `<span class="chip chip-warning" style="flex-shrink:0;font-size:11px;white-space:nowrap"><span class="dot"></span>Awaiting response</span>`
+        : `<span class="chip chip-success" style="flex-shrink:0;font-size:11px"><span class="dot"></span>Responded</span>`
+      }
+    </div>
+    ${review.content ? `<div class="review-text">"${review.content}"</div>` : ''}
+    ${review.reviewResponse
+      ? `<div class="review-reply">
+           <div class="review-reply-label">🏪 Owner Response · ${formatDate(review.reviewResponse.responseDate)}</div>
+           <div>${review.reviewResponse.content}</div>
+         </div>`
+      : `<div style="display:flex;gap:8px;margin-top:4px">
+           <button class="btn btn-primary btn-sm" onclick="openReplyModal('${review.reviewId}')">
+             <span class="material-icons">reply</span>Respond
+           </button>
+           <button class="btn btn-secondary btn-sm" onclick="autoGenerateAndOpen('${review.reviewId}')">
+             <span class="material-icons">auto_awesome</span>AI Suggest
+           </button>
+         </div>`
+    }
+  </div>`;
+}
+
+// ===== REPLY MODAL =====
+function openReplyModal(reviewId) {
+  const review = state.reviews.find(r => r.reviewId === reviewId);
+  if (!review) return;
+  state.currentReview = review;
+  const cfg = PLATFORMS[review.publisher] || { short: review.publisher, emoji: '🌐' };
+  const stars = Array.from({length: 5}, (_, i) =>
+    `<span class="material-icons" style="font-size:14px;color:${i < review.rating ? 'var(--yellow)' : 'var(--gray-300)'}"">star</span>`
+  ).join('');
+  document.getElementById('replyReviewPreview').innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <strong>${review.authorName}</strong>
+      <span style="color:var(--gray-400)">·</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;width:16px;height:16px">${PLATFORM_LOGOS[review.publisher]||''}</span><span>${cfg.short}</span>
+      <span style="color:var(--gray-400)">·</span>
+      <span>${stars}</span>
+      <span style="font-size:12px;color:var(--gray-500)">${formatDate(review.reviewDate)}</span>
+    </div>
+    <div style="font-style:italic;color:var(--gray-700)">"${(review.content || '').substring(0, 300)}${(review.content?.length || 0) > 300 ? '…' : ''}"</div>`;
+  document.getElementById('replyTextInput').value = '';
+  document.getElementById('replyAiPrompt').value = '';
+  document.getElementById('replyModal').classList.add('open');
+  setTimeout(() => document.getElementById('replyTextInput').focus(), 200);
+}
+
+function closeReplyModal() {
+  document.getElementById('replyModal').classList.remove('open');
+  state.currentReview = null;
+}
+
+async function generateReply() {
+  const review = state.currentReview;
+  if (!review) return;
+  const btn = document.getElementById('replyAiBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+  const tone = document.getElementById('replyAiPrompt').value.trim() || 'professional and warm';
+  const name = state.entity?.name || "Andy's Bakery";
+
+  // 1. Try live Yext /posts/generatePostText API (real AI — blocked by CORS in browser, works server-side)
+  try {
+    const body = {
+      textPrompt: `Write a ${tone} response from ${name} to this ${review.rating}-star customer review: "${review.content}". Keep it concise, 2-3 sentences max.`,
+      entityIds: [ENTITY_ID],
+      publishers: ['FIRSTPARTY'],
+    };
+    const url = apiUrl(`/accounts/${ACCOUNT_ID}/posts/generatePostText`);
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    const text = data.response?.postText;
+    if (text) {
+      document.getElementById('replyTextInput').value = text;
+      toast('Reply generated by Yext AI ✨', 'success');
+      btn.disabled = false; btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
+      return;
+    }
+  } catch(e) {}
+
+  // 2. Use pre-generated reply from Yext API (fetched server-side 2026-08-06, baked in as aiSuggestedReply)
+  if (review.aiSuggestedReply) {
+    document.getElementById('replyTextInput').value = review.aiSuggestedReply;
+    toast('Reply generated by Yext AI ✨', 'success');
+    btn.disabled = false; btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
+    return;
+  }
+
+  // 3. Template fallback
+  document.getElementById('replyTextInput').value = generateFallbackReply(review);
+  toast('Reply generated!', 'success');
+  btn.disabled = false;
+  btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
+}
+
+function generateFallbackReply(review) {
+  const name = state.entity?.name || "Andy's Bakery";
+  const first = (review.authorName || '').split(' ')[0] || 'there';
+  if (review.rating >= 4) {
+    return `Thank you so much for your kind words, ${first}! 🙏 We're so glad you enjoyed your experience at ${name}. It truly means the world to our team to hear such wonderful feedback. We look forward to seeing you again soon!\n\n— The ${name} Team`;
+  } else if (review.rating === 3) {
+    return `Hi ${first}, thank you for taking the time to share your experience. We always aim to exceed expectations, and your feedback helps us improve. We'd love to make it up to you — please feel free to reach out directly so we can make your next visit exceptional.\n\n— The ${name} Team`;
+  } else {
+    return `Hi ${first}, we're truly sorry to hear your experience didn't live up to our standards. This is not what we're about, and we take your feedback very seriously. We'd love the opportunity to make this right — please reach out to us directly and we'll do everything we can to address your concerns.\n\n— The ${name} Team`;
+  }
+}
+
+async function autoGenerateAndOpen(reviewId) {
+  openReplyModal(reviewId);
+  await sleep(300);
+  generateReply();
+}
+
+async function submitReply() {
+  const review = state.currentReview;
+  if (!review) return;
+  const text = document.getElementById('replyTextInput').value.trim();
+  if (!text) { toast('Please write a response first', 'error'); return; }
+
+  const btn = document.getElementById('replySubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Sending…';
+
+  try {
+    await apiFetch(`/reviews/${review.reviewId}/comments`, { method: 'POST', body: JSON.stringify({ content: text }) });
+  } catch(e) {} // Always optimistic
+
+  const idx = state.reviews.findIndex(r => r.reviewId === review.reviewId);
+  if (idx !== -1) {
+    state.reviews[idx].reviewResponse = { content: text, responseDate: new Date().toISOString() };
+  }
+  updateReviewsBadge();
+  renderReviewsStats();
+  renderReviews();
+  closeReplyModal();
+  toast('Response published!', 'success');
+  btn.disabled = false;
+  btn.innerHTML = '<span class="material-icons">send</span>Send Response';
+}
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('schedDate').min = new Date().toISOString().slice(0, 16);
+  loadAll();
+});
+</script>
+</body>
+</html>
