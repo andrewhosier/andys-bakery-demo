@@ -1808,8 +1808,9 @@ async function checkProxy() {
   if (proxyAvailable !== null) return proxyAvailable;
   try {
     const probeUrl = `${PROXY_BASE}/api/proxy?path=/v2/accounts/${ACCOUNT_ID}/entities/${ENTITY_ID}&api_key=${API_KEY}&v=${API_VERSION}`;
-    const res = await fetch(probeUrl, { signal: AbortSignal.timeout(3000) });
+    const res = await fetch(probeUrl, { signal: AbortSignal.timeout(8000) });
     proxyAvailable = res.ok;
+    console.log('Proxy probe status:', res.status);
   } catch(e) { proxyAvailable = false; }
   console.log('Proxy available:', proxyAvailable);
   return proxyAvailable;
