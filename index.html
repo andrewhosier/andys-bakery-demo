@@ -134,7 +134,7 @@
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; overflow: hidden;
     }
-    .biz-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .biz-icon img { width: 100%; height: 100%; -o-object-fit: cover; object-fit: cover; }
     .biz-icon .material-icons { color: #fff; font-size: 20px; }
     .biz-info { flex: 1; min-width: 0; }
     .biz-name {
@@ -287,7 +287,8 @@
     .post-stat .material-icons { font-size: 14px; }
     .post-thumbnail {
       width: 80px; height: 80px; border-radius: 4px;
-      object-fit: cover; flex-shrink: 0;
+      -o-object-fit: cover;
+         object-fit: cover; flex-shrink: 0;
     }
 
     /* ===== PLATFORM CONNECT CARDS ===== */
@@ -381,6 +382,7 @@
       resize: vertical;
     }
     .form-control:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,115,232,.1); }
+    .form-control::-moz-placeholder { color: var(--gray-500); }
     .form-control::placeholder { color: var(--gray-500); }
     textarea.form-control { min-height: 120px; line-height: 1.5; }
 
@@ -390,7 +392,7 @@
       display: flex; align-items: center; gap: 6px;
       padding: 6px 14px; border-radius: 20px; cursor: pointer;
       border: 2px solid var(--gray-300); font-size: 13px; font-weight: 500;
-      transition: all .15s; user-select: none; background: #fff;
+      transition: all .15s; -webkit-user-select: none; -moz-user-select: none; user-select: none; background: #fff;
     }
     .platform-toggle:hover { border-color: var(--gray-500); background: var(--gray-100); }
     .platform-toggle.selected.google { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
@@ -419,6 +421,7 @@
       padding: 8px 12px; border-radius: 20px; font-size: 14px;
       font-family: 'Roboto', sans-serif; color: var(--gray-900);
     }
+    .ai-input::-moz-placeholder { color: var(--gray-500); }
     .ai-input::placeholder { color: var(--gray-500); }
 
     .spinner {
@@ -438,7 +441,7 @@
       padding: 6px 14px; border-radius: 20px;
       border: 2px solid var(--gray-300); cursor: pointer;
       font-size: 13px; font-weight: 500; color: var(--gray-700);
-      transition: all .15s; user-select: none;
+      transition: all .15s; -webkit-user-select: none; -moz-user-select: none; user-select: none;
     }
     .radio-btn.selected { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
     .radio-btn input { display: none; }
@@ -515,7 +518,8 @@
     .img-preview-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
     .img-preview {
       width: 80px; height: 80px; border-radius: 4px;
-      object-fit: cover; border: 1px solid var(--gray-300);
+      -o-object-fit: cover;
+         object-fit: cover; border: 1px solid var(--gray-300);
     }
     .img-upload-btn {
       width: 80px; height: 80px; border-radius: 4px;
@@ -681,6 +685,10 @@
       <a class="nav-item" data-view="analytics" onclick="showView('analytics');return false" href="#">
         <span class="material-icons">bar_chart</span>Analytics
       </a>
+      <a class="nav-item" data-view="comments" onclick="showView('comments');return false" href="#">
+        <span class="material-icons">chat</span>Comments &amp; DMs
+        <span class="badge" id="commentsBadge" style="display:none">0</span>
+      </a>
       <div class="nav-divider"></div>
       <div class="nav-section-label">Presence</div>
       <a class="nav-item" data-view="listings" onclick="showView('listings');return false" href="#">
@@ -838,23 +846,23 @@
 
       <div class="stats-grid" style="margin-bottom:20px">
         <div class="stat-card">
-          <div class="stat-label">Impressions</div>
-          <div class="stat-value">3,214</div>
-          <div class="stat-meta"><span class="up">↑ 18%</span> vs last period</div>
+          <div class="stat-label">Total Impressions</div>
+          <div class="stat-value" id="analyticsTotalImpressions">—</div>
+          <div class="stat-meta" id="analyticsImpMeta">Across all platforms</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Clicks</div>
-          <div class="stat-value">428</div>
-          <div class="stat-meta"><span class="up">↑ 11%</span> vs last period</div>
+          <div class="stat-label">Total Clicks</div>
+          <div class="stat-value" id="analyticsTotalClicks">—</div>
+          <div class="stat-meta" id="analyticsClkMeta">Across all platforms</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Avg. Engagement Rate</div>
-          <div class="stat-value">5.1%</div>
-          <div class="stat-meta"><span class="up">↑ 0.6pp</span> vs last period</div>
+          <div class="stat-label">Avg. Click-Through Rate</div>
+          <div class="stat-value" id="analyticsAvgCtr">—</div>
+          <div class="stat-meta">Clicks ÷ impressions</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Posts Published</div>
-          <div class="stat-value" id="analyticsPostCount">0</div>
+          <div class="stat-value" id="analyticsPostCount">—</div>
           <div class="stat-meta">Last 30 days</div>
         </div>
       </div>
@@ -870,9 +878,47 @@
         </div>
       </div>
 
-      <div class="chart-container">
+      <div class="chart-container" style="margin-bottom:16px">
         <div class="chart-title">Engagement by platform</div>
-        <div id="platformEngagementChart" style="display:flex;gap:24px;flex-wrap:wrap;padding-top:8px"></div>
+        <div id="platformEngagementChart" style="display:flex;gap:16px;flex-wrap:wrap;padding-top:8px"></div>
+      </div>
+
+      <div class="chart-container">
+        <div class="chart-title">Top posts by impressions</div>
+        <div id="analyticsTopPosts" style="display:flex;flex-direction:column;gap:8px;padding-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- ===== COMMENTS & DMs ===== -->
+    <div class="view" id="view-comments">
+      <div class="page-header">
+        <div><div class="page-title">Comments &amp; DMs</div>
+        <div class="page-subtitle">Manage comments and direct messages</div></div>
+      </div>
+      <div style="display:flex;gap:0;height:calc(100vh - 180px);background:#fff;border:1px solid var(--gray-200);border-radius:8px;overflow:hidden">
+        <!-- Left panel -->
+        <div style="width:340px;min-width:340px;border-right:1px solid var(--gray-200);display:flex;flex-direction:column">
+          <!-- Tabs -->
+          <div style="display:flex;border-bottom:1px solid var(--gray-200);padding:0 12px">
+            <button id="tabComments" class="comments-tab active-tab" onclick="switchCommentTab('comments')" style="padding:12px 16px;border:none;background:none;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid var(--blue);color:var(--blue)">Comments</button>
+            <button id="tabDMs" class="comments-tab" onclick="switchCommentTab('dms')" style="padding:12px 16px;border:none;background:none;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--gray-500)">Direct Messages</button>
+          </div>
+          <!-- Search -->
+          <div style="padding:10px 12px;border-bottom:1px solid var(--gray-200)">
+            <div style="display:flex;align-items:center;gap:6px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:6px;padding:6px 10px">
+              <span class="material-icons" style="font-size:16px;color:var(--gray-400)">search</span>
+              <input id="commentSearch" style="border:none;background:transparent;font-size:13px;outline:none;flex:1" placeholder="Search messages and users" oninput="filterConversations()"/>
+            </div>
+          </div>
+          <!-- Conversation list -->
+          <div id="conversationList" style="flex:1;overflow-y:auto"></div>
+        </div>
+        <!-- Right panel -->
+        <div id="conversationThread" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gray-500)">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><circle cx="38" cy="38" r="28" stroke="#c5cae9" stroke-width="3" fill="#f0f4ff"/><circle cx="30" cy="38" r="3" fill="#9fa8da"/><circle cx="40" cy="38" r="3" fill="#9fa8da"/><circle cx="50" cy="38" r="3" fill="#9fa8da"/></svg>
+          <div style="font-size:15px;font-weight:600;margin-top:12px;color:var(--gray-700)">Nothing selected</div>
+          <div style="font-size:13px;margin-top:4px">Select an item to see it here.</div>
+        </div>
       </div>
     </div>
 
@@ -927,7 +973,7 @@
           </div>
           <div class="card-footer">
             <a id="editInYextLink" href="https://www.yext.com/s/5554655/entity/edit3?entityIds=AndyBK" target="_blank" class="btn btn-secondary btn-sm">
-              <span class="material-icons">open_in_new</span>Edit in Yext
+              <span class="material-icons">open_in_new</span>Edit in Dashboard
             </a>
           </div>
         </div>
@@ -964,7 +1010,7 @@
                 <!-- populated by JS -->
               </div>
               <div style="margin-top:12px;font-size:12px;color:var(--gray-600)">
-                Photos sourced from Yext Knowledge Graph · <a href="https://www.yext.com/s/5554655/entity/edit3?entityIds=AndyBK" target="_blank" class="text-link">Manage in Yext →</a>
+                Photos sourced from Knowledge Graph · <a href="https://www.yext.com/s/5554655/entity/edit3?entityIds=AndyBK" target="_blank" class="text-link">Manage →</a>
               </div>
             </div>
           </div>
@@ -980,30 +1026,35 @@
           <div class="page-subtitle" id="listingsSubtitle">Publisher sync status for Andy's Bakery</div>
         </div>
         <a href="https://www.yext.com/s/5554655/listings" target="_blank" class="btn btn-secondary">
-          <span class="material-icons">open_in_new</span>Manage in Yext
+          <span class="material-icons">open_in_new</span>Open Dashboard
         </a>
       </div>
 
-      <div class="stats-grid" style="margin-bottom:20px">
+      <div class="stats-grid" style="margin-bottom:20px;grid-template-columns:repeat(5,1fr)">
         <div class="stat-card">
-          <div class="stat-label">Total Publishers</div>
+          <div class="stat-label">Total Listings</div>
           <div class="stat-value" id="listingsTotalPubs">—</div>
-          <div class="stat-meta">Monitored</div>
+          <div class="stat-meta">Publishers monitored</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Live & Synced</div>
+          <div class="stat-label">Synced</div>
           <div class="stat-value" style="color:var(--green)" id="listingsInSync">—</div>
           <div class="stat-meta">Accurate listings</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Needs Attention</div>
-          <div class="stat-value" style="color:var(--red)" id="listingsNeedsAttention">—</div>
+          <div class="stat-label">Not Synced</div>
+          <div class="stat-value" style="color:#f29900" id="listingsNeedsAttention">—</div>
           <div class="stat-meta">Action required</div>
         </div>
         <div class="stat-card">
-          <div class="stat-label">Sync Score</div>
-          <div class="stat-value" id="listingsSyncScore">—</div>
-          <div class="stat-meta">Out of 100</div>
+          <div class="stat-label">Processing</div>
+          <div class="stat-value" style="color:var(--blue)" id="listingsProcessing">—</div>
+          <div class="stat-meta">In progress</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Opted Out</div>
+          <div class="stat-value" style="color:var(--gray-500)" id="listingsOptedOut">—</div>
+          <div class="stat-meta">Not enrolled</div>
         </div>
       </div>
 
@@ -1034,7 +1085,7 @@
           <div class="page-subtitle" id="reviewsSubtitle">Monitor and respond to customer reviews</div>
         </div>
         <a href="https://www.yext.com/s/5554655/reviews" target="_blank" class="btn btn-secondary">
-          <span class="material-icons">open_in_new</span>Manage in Yext
+          <span class="material-icons">open_in_new</span>Open Dashboard
         </a>
       </div>
 
@@ -1073,7 +1124,7 @@
           <option value="">All platforms</option>
           <option value="GOOGLEMYBUSINESS">🔵 Google</option>
           <option value="FACEBOOK">📘 Facebook</option>
-          <option value="YEXT">🌐 Yext</option>
+          <option value="YEXT">🌐 First Party</option>
         </select>
       </div>
 
@@ -1091,7 +1142,7 @@
       <div class="page-header">
         <div>
           <div class="page-title">Pages</div>
-          <div class="page-subtitle">Edit and publish your Yext-powered local page</div>
+          <div class="page-subtitle">Edit and publish your local page</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <!-- Device toggle -->
@@ -1357,8 +1408,8 @@
                 <div style="font-size:12px;color:#aaa">36 Rodney Street, Kingston, NY 12401</div>
               </div>
               <div style="font-size:11px;color:#666;display:flex;align-items:center;gap:6px">
-                <svg viewBox="0 0 32 32" width="16" height="16"><circle cx="16" cy="16" r="16" fill="#f6a623"/><text x="16" y="21" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="white">Y</text></svg>
-                Powered by Yext Pages
+                <span class="material-icons" style="font-size:14px;color:#f6a623">language</span>
+                Local Pages
               </div>
             </div>
           </div>
@@ -1448,16 +1499,32 @@
         </div>
       </div>
 
-      <!-- Image -->
+      <!-- Media -->
       <div class="form-group">
-        <label class="form-label">Images</label>
-        <div class="img-preview-wrap" id="imgPreviewWrap">
-          <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
-            <span class="material-icons">add_photo_alternate</span>
-            Add image
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <label class="form-label" style="margin:0">Media</label>
+          <div style="display:flex;gap:4px;margin-left:auto">
+            <button id="mediaTabPhoto" onclick="switchMediaTab('photo')" class="btn btn-secondary btn-sm" style="font-size:11px;padding:2px 10px"><span class="material-icons" style="font-size:13px">photo</span> Photo</button>
+            <button id="mediaTabVideo" onclick="switchMediaTab('video')" class="btn btn-secondary btn-sm" style="font-size:11px;padding:2px 10px;background:transparent"><span class="material-icons" style="font-size:13px">videocam</span> Video</button>
           </div>
         </div>
-        <input type="file" id="imgFileInput" accept="image/*" style="display:none" multiple onchange="previewImages(event)" />
+        <div id="mediaPhotoPanel">
+          <div class="img-preview-wrap" id="imgPreviewWrap">
+            <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
+              <span class="material-icons">add_photo_alternate</span>
+              Add image
+            </div>
+          </div>
+          <input type="file" id="imgFileInput" accept="image/*" style="display:none" multiple onchange="previewImages(event)" />
+        </div>
+        <div id="mediaVideoPanel" style="display:none">
+          <div class="img-upload-btn" style="width:100%;justify-content:center" onclick="document.getElementById('videoFileInput').click()">
+            <span class="material-icons">video_file</span>
+            <span id="videoFileLabel">Add video (MP4 or MOV)</span>
+          </div>
+          <input type="file" id="videoFileInput" accept="video/mp4,video/quicktime,.mov" style="display:none" onchange="previewVideo(event)" />
+          <div style="font-size:11px;color:var(--gray-400);margin-top:6px">Video is uploaded via POST /v2/accounts/{accountId}/videos before publishing</div>
+        </div>
       </div>
 
       <!-- CTA -->
@@ -1724,19 +1791,94 @@ const REAL_REVIEWS = [
 ];
 
 // ===== PLATFORM LOGOS (inline SVG) =====
+// Helper: lettered fallback icon
+function _pubIcon(letter, bg, fg='#fff', rx=16) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="${rx}" fill="${bg}"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="${fg}">${letter}</text></svg>`;
+}
 const PLATFORM_LOGOS = {
-  FIRSTPARTY: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#f6a623"/><text x="16" y="21" text-anchor="middle" font-family="Google Sans,Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">Y</text></svg>`,
-  GOOGLEMYBUSINESS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>`,
+  // === Core social / search ===
+  FIRSTPARTY: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#f6a623"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">1P</text></svg>`,
+  GOOGLEMYBUSINESS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`,
+  WAZE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#05c8f0"/><path d="M16 6C11.58 6 8 9.35 8 13.5c0 2.5 1.28 4.72 3.25 6.1L11 23l3-1.5c.62.15 1.3.25 2 .25 4.42 0 8-3.35 8-7.5S20.42 6 16 6z" fill="#fff"/><circle cx="13" cy="14" r="1.5" fill="#333"/><circle cx="19" cy="14" r="1.5" fill="#333"/><path d="M13 17.5s1 1.5 3 1.5 3-1.5 3-1.5" stroke="#333" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="22" cy="24" r="3" fill="#fff" stroke="#05c8f0" stroke-width="1.5"/><circle cx="22" cy="24" r="1.5" fill="#05c8f0"/></svg>`,
+  GOOGLEGEMINI: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#1a73e8"/><path d="M16 7l2.5 7.5H26l-6.3 4.6 2.4 7.4L16 22l-6.1 4.5 2.4-7.4L6 14.5h7.5z" fill="#fff" opacity=".9"/></svg>`,
   FACEBOOK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#1877f2"/><path d="M21.2 16h-3.4v10h-4V16h-2v-3.5h2v-2c0-2.8 1.2-4.5 4.5-4.5H21v3.5h-1.8c-1.2 0-1.4.5-1.4 1.4v1.6H21l-.8 3.5z" fill="#fff"/></svg>`,
-  INSTAGRAM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><defs><radialGradient id="ig" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="32" height="32" rx="7" fill="url(#ig)"/><rect x="7" y="7" width="18" height="18" rx="5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="4.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="22" cy="10" r="1.5" fill="#fff"/></svg>`,
+  INSTAGRAM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><defs><radialGradient id="ig2" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="32" height="32" rx="7" fill="url(#ig2)"/><rect x="7" y="7" width="18" height="18" rx="5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="4.5" stroke="#fff" stroke-width="2" fill="none"/><circle cx="22" cy="10" r="1.5" fill="#fff"/></svg>`,
   TIKTOK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#010101"/><path d="M22 8h-3.5v11c0 1.7-1.3 3-3 3s-3-1.3-3-3 1.3-3 3-3c.3 0 .6 0 .9.1V12.5c-.3 0-.6-.1-.9-.1-3.6 0-6.5 2.9-6.5 6.5S12.4 25.5 16 25.5 22.5 22.6 22.5 19V12.1c1.2.8 2.6 1.3 4 1.3V10c-2.2 0-4-1.8-4-4z" fill="white"/></svg>`,
   LINKEDIN: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#0077b5"/><path d="M9 13h3.5v10H9zm1.75-5.5a2 2 0 110 4 2 2 0 010-4zM14 13h3.3v1.4h.05c.46-.87 1.57-1.8 3.24-1.8 3.47 0 4.11 2.28 4.11 5.24V23H21.2v-4.5c0-1.07 0-2.45-1.49-2.45s-1.72 1.17-1.72 2.38V23H14V13z" fill="white"/></svg>`,
   YELP: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#d32323"/><path d="M17.5 9.5c0-1-.8-1.5-1.5-1.5S15 8.5 15 9.5v6.2l2.5-.4V9.5zM21.3 18.8c-.4-.9-1.5-1.1-2.3-.6l-1.9 1.1 3.2 4.8c.5.8 1.6.9 2.2.2.6-.7.4-1.8-.3-2.4l-.9-3.1zm-9.6-2.4L9 17.5c-.9.4-1.2 1.4-.7 2.2.5.8 1.6 1 2.4.5l3.2-2.4-2.2-1zm1.3 5.2l-2.4 3.2c-.5.7-.3 1.7.4 2.1.8.5 1.8.2 2.2-.6l1.5-4.2-1.7-.5zm6.6-9.4c-.8-.5-1.8-.2-2.2.6l-1.5 4.1 4.8-.7c1-.1 1.6-1.1 1.3-2-.3-.8-1.5-1.5-2.4-2z" fill="white"/></svg>`,
+  YELPENTERPRISE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#d32323"/><path d="M17.5 9.5c0-1-.8-1.5-1.5-1.5S15 8.5 15 9.5v6.2l2.5-.4V9.5zM21.3 18.8c-.4-.9-1.5-1.1-2.3-.6l-1.9 1.1 3.2 4.8c.5.8 1.6.9 2.2.2.6-.7.4-1.8-.3-2.4l-.9-3.1zm-9.6-2.4L9 17.5c-.9.4-1.2 1.4-.7 2.2.5.8 1.6 1 2.4.5l3.2-2.4-2.2-1zm1.3 5.2l-2.4 3.2c-.5.7-.3 1.7.4 2.1.8.5 1.8.2 2.2-.6l1.5-4.2-1.7-.5zm6.6-9.4c-.8-.5-1.8-.2-2.2.6l-1.5 4.1 4.8-.7c1-.1 1.6-1.1 1.3-2-.3-.8-1.5-1.5-2.4-2z" fill="white"/></svg>`,
   BING: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#008373"/><path d="M10 7h3v14.5l4-2.2.8 2.5-6 3.2H10V7z" fill="white"/><path d="M13 16.5l5-2.7 2.5 6.5-7 3.7v-2.5l4.5-2.4-1.5-3.5-3.5 1.9V16z" fill="#ffb900"/></svg>`,
-  APPLE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#f2f2f2"/><path d="M16 6a3.3 3.3 0 002.4-1 3 3 0 00.8-2.2A3.3 3.3 0 0016.8 4a3.3 3.3 0 00-.8 2.2c0-.1 0-.1 0 0zm3.8 1.6C18 7.6 17 7 16 7s-2.2.7-2.9.7c-3.5 0-5.1 2.7-5.1 6.2 0 5.4 3.5 11.1 5.4 11.1.6 0 1.3-.6 2.6-.6 1.2 0 1.8.6 2.6.6 2.1 0 5.4-6 5.4-11.1 0-3.5-1.7-6.2-5.2-6.3z" fill="#333"/></svg>`,
+  APPLE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#f2f2f2"/><path d="M16 6a3.3 3.3 0 002.4-1 3 3 0 00.8-2.2A3.3 3.3 0 0016.8 4a3.3 3.3 0 00-.8 2.2zm3.8 1.6C18 7.6 17 7 16 7s-2.2.7-2.9.7c-3.5 0-5.1 2.7-5.1 6.2 0 5.4 3.5 11.1 5.4 11.1.6 0 1.3-.6 2.6-.6 1.2 0 1.8.6 2.6.6 2.1 0 5.4-6 5.4-11.1 0-3.5-1.7-6.2-5.2-6.3z" fill="#333"/></svg>`,
+  SIRI: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#f2f2f2"/><defs><radialGradient id="siri" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#a78bfa"/><stop offset="50%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#06b6d4"/></radialGradient></defs><ellipse cx="16" cy="16" rx="7" ry="5" fill="url(#siri)" opacity="0.9"/><ellipse cx="16" cy="16" rx="4" ry="2.5" fill="#fff" opacity="0.5"/></svg>`,
   FOURSQUARE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#f94877"/><path d="M21 8H11c-.8 0-1 .5-1 1v15l5-4.5h3l1-4.5h-4v-3h5l1-4z" fill="white"/></svg>`,
-  MAPQUEST: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#003594"/><path d="M16 7c-4.4 0-8 3.6-8 8 0 5.5 8 13 8 13s8-7.5 8-13c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="white"/><path d="M14 14h4v4h-4z" fill="#003594"/></svg>`,
-  TRIPADVISOR: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#34E0A1"/><circle cx="10" cy="16" r="4" fill="white"/><circle cx="22" cy="16" r="4" fill="white"/><circle cx="10" cy="16" r="2" fill="#333"/><circle cx="22" cy="16" r="2" fill="#333"/><path d="M7 13h4l-1-3H8z" fill="white"/><path d="M21 10h-2l-1 3h4z" fill="white"/><path d="M13 12h6l1-3H12z" fill="white"/></svg>`,
+  SNAPCHAT: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#FFFC00"/><path d="M16 6c-3.3 0-6 2.7-6 6v1.5c-.5.1-1 .4-1.5.9-.3.3-.5.7-.5 1.1 0 .6.3 1.1.8 1.4-.2.5-.5.9-.9 1.3-.8.8-1.9 1.1-1.9 1.5 0 .3.4.5 1 .7.2.1.3.2.3.4 0 .1 0 .2-.1.3-.2.5-.7.5-1.4.5-.2 0-.3.1-.3.2 0 .2.7.9 2 1.2.1.3.2.7.2 1.2 0 .2.1.3.3.3 1 0 2-.7 3.5-.7.7 0 1.5.2 2.5.6.3.1.6.2 1 .2s.7-.1 1-.2c1-.4 1.8-.6 2.5-.6 1.5 0 2.5.7 3.5.7.2 0 .3-.1.3-.3 0-.5.1-.9.2-1.2 1.3-.3 2-1 2-1.2 0-.1-.1-.2-.3-.2-.7 0-1.2 0-1.4-.5-.1-.1-.1-.2-.1-.3 0-.2.1-.3.3-.4.6-.2 1-.4 1-.7 0-.4-1.1-.7-1.9-1.5-.4-.4-.7-.8-.9-1.3.5-.3.8-.8.8-1.4 0-.4-.2-.8-.5-1.1-.5-.5-1-.8-1.5-.9V12c0-3.3-2.7-6-6-6z" fill="#333"/></svg>`,
+  NEXTDOOR: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#8BC34A"/><path d="M16 7l-9 7v12h7v-7h4v7h7V14L16 7z" fill="white"/></svg>`,
+  MAPQUEST: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#003594"/><path d="M16 7c-4.4 0-8 3.6-8 8 0 5.5 8 13 8 13s8-7.5 8-13c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z" fill="white"/></svg>`,
+  TRIPADVISORREVIEWS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#34E0A1"/><circle cx="10.5" cy="16" r="3.5" fill="white"/><circle cx="21.5" cy="16" r="3.5" fill="white"/><circle cx="10.5" cy="16" r="1.8" fill="#333"/><circle cx="21.5" cy="16" r="1.8" fill="#333"/><path d="M8 13h5l-1-3H9z" fill="white"/><path d="M19 10h-2l-1 3h5z" fill="white"/><path d="M13 11.5h6l1-3H12z" fill="white"/></svg>`,
+  // === Delivery / food ===
+  DOORDASH: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#FF3008"/><path d="M9 13h10c2.2 0 4 1.8 4 4s-1.8 4-4 4H9v-3h10c.6 0 1-.4 1-1s-.4-1-1-1H9v-3z" fill="white"/></svg>`,
+  INSTACART: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#43B02A"/><path d="M18 8c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2 3c-3.3 0-6 2.7-6 6 0 2 1 3.8 2.5 4.9L11 25h10l-1.5-3.1C21 20.8 22 19 22 17c0-3.3-2.7-6-6-6zm0 9c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z" fill="white"/></svg>`,
+  UBER: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#000"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">U</text></svg>`,
+  UBEREATS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#06C167"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">UE</text></svg>`,
+  UBERFREIGHT: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1D2C4C"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">UF</text></svg>`,
+  POSTMATES: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#FF4F00"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#fff">P</text></svg>`,
+  // === Maps / navigation ===
+  HERE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#00AFAA"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">HERE</text></svg>`,
+  TOMTOM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#DF0B25"/><circle cx="16" cy="14" r="5" fill="white"/><path d="M16 18v7" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>`,
+  MAPBOX: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1A1A1A"/><circle cx="16" cy="16" r="8" stroke="#4264FB" stroke-width="2" fill="none"/><path d="M12 16l3 3 5-6" stroke="#4264FB" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`,
+  NAVMII: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#00B0FF"/><path d="M16 8l-7 12h14L16 8z" fill="white"/></svg>`,
+  MAPSTR: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="8" fill="#FF6B6B"/><path d="M16 8c-3.3 0-6 2.7-6 6 0 4 6 10 6 10s6-6 6-10c0-3.3-2.7-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" fill="white"/></svg>`,
+  WHERETO: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="8" fill="#FF9800"/><path d="M16 8c-3.3 0-6 2.7-6 6 0 4 6 10 6 10s6-6 6-10c0-3.3-2.7-6-6-6zm0 8a2 2 0 110-4 2 2 0 010 4z" fill="white"/></svg>`,
+  // === Directories / review ===
+  MERCHANTCIRCLE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#003399"/><circle cx="16" cy="16" r="8" stroke="white" stroke-width="2" fill="none"/><circle cx="16" cy="16" r="3" fill="white"/></svg>`,
+  YPCOM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#DA4E12"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">YP</text></svg>`,
+  YELLOWPAGESGOESGREEN: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#FFD700"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#333">YP</text></svg>`,
+  SUPERPAGES: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#003DA5"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">SP</text></svg>`,
+  BETTERBUSINESSBUREAU: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#003594"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">BBB</text></svg>`,
+  CHAMBEROFCOMMERCECOM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#8B1A1A"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#fff">CoC</text></svg>`,
+  YAHOO: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#6001D2"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">Y!</text></svg>`,
+  OPENAI: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#0D0D0D"/><path d="M16 8a8 8 0 100 16A8 8 0 0016 8zm0 2a6 6 0 010 12A6 6 0 0116 10zm0 2a4 4 0 100 8 4 4 0 000-8z" fill="#fff" opacity="0.8"/></svg>`,
+  BRAVE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#FF5500"/><path d="M16 7l7 4.5-1.5 11L16 26l-5.5-3.5L9 11.5 16 7z" fill="white" opacity="0.9"/><path d="M13.5 15l1.5 1.5L16 15l1 1.5 1.5-1.5-1 3H14l-0.5-3z" fill="#FF5500"/></svg>`,
+  METAPLACESGRAPH: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="7" fill="#0866FF"/><path d="M16 10c-1.7 0-3 1.3-3 3 0 1.2.7 2.2 1.7 2.7C12.7 16.5 11 18.6 11 21h2c0-1.7 1.3-3 3-3s3 1.3 3 3h2c0-2.4-1.7-4.5-3.7-5.3 1-.5 1.7-1.5 1.7-2.7 0-1.7-1.3-3-3-3z" fill="white"/></svg>`,
+  YANDEX: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#FC3F1D"/><path d="M18.5 8H15c-3.3 0-5.5 1.7-5.5 4.5 0 2.5 1.3 3.8 3.5 5.2L9.5 24H12l3.5-6.5H17V24h2.5V8H18.5zm-1.5 8h-1.5c-2 0-3-1-3-2.8 0-1.8 1-2.8 3-2.8H17V16z" fill="white"/></svg>`,
+  YANGO: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#FC3F1D"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">Ya</text></svg>`,
+  DUNANDBRADSTREET: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#0033A0"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">D&B</text></svg>`,
+  AMERICANEXPRESS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#007BC1"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">AMEX</text></svg>`,
+  PITNEYBOWES: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#00529B"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#fff">PB</text></svg>`,
+  SAFEGRAPH: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1A1F36"/><path d="M16 8l-8 4v5c0 4.4 3.4 8.5 8 9.5 4.6-1 8-5.1 8-9.5v-5l-8-4z" fill="#7B68EE" opacity="0.8"/></svg>`,
+  DEXKNOWS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#FF6900"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">DEX</text></svg>`,
+  ALEXA: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#00CAFF"/><circle cx="16" cy="16" r="7" fill="#00A3D9"/><circle cx="16" cy="16" r="3" fill="#007BB5"/></svg>`,
+  GOLOCAL247: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#2E7D32"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">GL247</text></svg>`,
+  CITYSQUARES: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#E53935"/><rect x="8" y="8" width="7" height="7" rx="1" fill="white"/><rect x="17" y="8" width="7" height="7" rx="1" fill="white"/><rect x="8" y="17" width="7" height="7" rx="1" fill="white"/><rect x="17" y="17" width="7" height="7" rx="1" fill="white" opacity="0.5"/></svg>`,
+  CYLEX: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#FF6600"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">CYL</text></svg>`,
+  FINDOPEN: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#FF6600"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">FO</text></svg>`,
+  FIRMANIA: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#E64A19"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">FM</text></svg>`,
+  AROUNDME: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#F57C00"/><circle cx="16" cy="16" r="5" fill="white"/><circle cx="16" cy="16" r="2" fill="#F57C00"/><path d="M16 5v4M16 23v4M5 16h4M23 16h4" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`,
+  OPENDI: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#009688"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">OD</text></svg>`,
+  BROWNBOOKNET: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#795548"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">BB</text></svg>`,
+  SOLEO: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#1565C0"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">SOL</text></svg>`,
+  HOURSCOM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#0288D1"/><circle cx="16" cy="16" r="8" stroke="white" stroke-width="1.5" fill="none"/><path d="M16 10v6l4 2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  HOTFROG: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#6ABE00"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">HF</text></svg>`,
+  N49CA: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#D32F2F"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">n49</text></svg>`,
+  IBEGIN: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1976D2"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">iB</text></svg>`,
+  IGLOBAL: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#0097A7"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">iG</text></svg>`,
+  USCITYNET: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#B71C1C"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">USC</text></svg>`,
+  MONEYMAILER: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#4CAF50"/><rect x="6" y="10" width="20" height="14" rx="2" fill="white" opacity="0.9"/><path d="M6 12l10 7 10-7" stroke="#4CAF50" stroke-width="1.5" fill="none"/></svg>`,
+  MYLOCALSERVICES: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#5C6BC0"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">MLS</text></svg>`,
+  ELOCALV2: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#FF7043"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">eL</text></svg>`,
+  EZLOCAL: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#26A69A"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">EZ</text></svg>`,
+  DOLA: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#6750A4"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">D</text></svg>`,
+  WINNIE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#FF9E80"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" font-weight="700" fill="#fff">W</text></svg>`,
+  SPALOCAL: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#AD1457"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">SPA</text></svg>`,
+  CONTRACTORSA2Z: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#37474F"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" font-weight="700" fill="#fff">PMP</text></svg>`,
+  PROPERTYCAPSULE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1A237E"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">PC</text></svg>`,
+  REXDIRECT: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#E65100"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">REX</text></svg>`,
+  TRUCKERPATH: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#263238"/><path d="M6 20h14l3-7H6v7zm0 0l-1 4h18l-1-4" fill="white"/><circle cx="10" cy="24" r="2" fill="#263238" stroke="white" stroke-width="1.5"/><circle cx="20" cy="24" r="2" fill="#263238" stroke="white" stroke-width="1.5"/></svg>`,
+  OPENAI_logo: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#0D0D0D"/><path d="M21.3 13.3a5.3 5.3 0 00-1-4.6 5.5 5.5 0 00-5.9-2 5.3 5.3 0 00-3.6 2.6 5.3 5.3 0 00-3.5 2.6 5.5 5.5 0 00.7 6.4 5.3 5.3 0 001 4.6 5.5 5.5 0 005.9 2 5.3 5.3 0 003.6-2.6 5.3 5.3 0 003.5-2.6 5.5 5.5 0 00-.7-6.4zm-9.5 7.9a2.5 2.5 0 01-1.6-1.5l.1-.1 3.4-2a .4.4 0 00.2-.4v-4.8l1.4.8v4.5a2.5 2.5 0 01-1.5 3.5zm7.2-2.4l-3.4-2a.4.4 0 00-.5 0l-3.4 2v-1.6l3.1-1.8 3.1 1.8 .1 1.6zm.1-3l-.1-.1-3.1-1.8v-3.5l.1-.1 1.5.8v2.7l2.7 1.6-.1.4-.1 0 .1-.1z" fill="white"/></svg>`,
+  ZIPLOCALONLINE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#E91E63"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">ZLO</text></svg>`,
+  TELLOWS: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="16" fill="#FF6F00"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">TEL</text></svg>`,
+  WOGIBTSWASDE: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><rect width="32" height="32" rx="5" fill="#1B5E20"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="700" fill="#fff">wgw</text></svg>`,
+  '8COUPONS': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22"><circle cx="16" cy="16" r="16" fill="#FF5722"/><text x="16" y="21" text-anchor="middle" font-family="Arial,sans-serif" font-size="13" font-weight="700" fill="#fff">8¢</text></svg>`,
 };
 
 // ===== PLATFORM CONFIG =====
@@ -1744,7 +1886,7 @@ const PLATFORMS = {
   FIRSTPARTY: {
     name: 'First Party', short: 'First Party', emoji: '🟠',
     color: '#f6a623', bg: '#fff3e0',
-    desc: 'Publish content directly through Yext to your own channels and syndication network.',
+    desc: 'Publish content directly to your own channels and syndication network.',
   },
   GOOGLEMYBUSINESS: {
     name: 'Google Business Profile', short: 'Google', emoji: '🔵',
@@ -1919,9 +2061,17 @@ function showView(viewId) {
   if (viewId === 'analytics') renderAnalytics();
   if (viewId === 'platforms') renderPlatformGrid();
   if (viewId === 'posts') renderPostsList();
-  if (viewId === 'listings') renderListings();
+  if (viewId === 'listings') {
+    if (state.listings.length) renderListings();
+    else loadListings(true); // fetch + render if not yet loaded
+  }
   if (viewId === 'reviews') renderReviews();
   if (viewId === 'pages') renderPages();
+  if (viewId === 'comments') {
+    renderConversationList();
+    const badge = document.getElementById('commentsBadge');
+    if (badge) badge.style.display = 'none';
+  }
 }
 
 // ===== DATA LOADING =====
@@ -1930,7 +2080,7 @@ async function loadAll() {
   state.entity = REAL_ENTITY;
   state.posts = [...REAL_POSTS];
   state.reviews = [...REAL_REVIEWS];
-  state.listings = getRealListings();
+  state.listings = []; // populated async by loadListings() below
   state.eligibility = {
     FIRSTPARTY:       { publisher: 'FIRSTPARTY',       status: 'ELIGIBLE',   entityId: ENTITY_ID },
     GOOGLEMYBUSINESS: { publisher: 'GOOGLEMYBUSINESS', status: 'INELIGIBLE', entityId: ENTITY_ID,
@@ -1953,6 +2103,9 @@ async function loadAll() {
 
   // 3. Attempt live refresh in background — silently updates if CORS allows, otherwise no-op
   liveRefreshAll();
+
+  // 4. Fetch real listings publisher list in background (GET, no proxy needed)
+  loadListings(false); // false = don't force-render; renderListings() called on view switch
 }
 
 async function liveRefreshAll() {
@@ -2151,7 +2304,8 @@ function renderPostItem(post) {
   const statusHtml = statusMap[post.status] || '';
   const thumb = post.photoUrls?.[0];
   const metrics = post.metrics || {};
-  return `<div class="post-item">
+  const commentCount = fakeCommentCount(post.postId);
+  return `<div class="post-item" style="position:relative">
     <div class="post-platform-icon" style="background:${cfg.bg || '#f0f0f0'};display:flex;align-items:center;justify-content:center">${PLATFORM_LOGOS[post.publisher] || `<span style="font-size:16px">${cfg.emoji||'🌐'}</span>`}</div>
     <div class="post-content">
       <div class="post-meta" style="margin-bottom:4px">
@@ -2161,13 +2315,18 @@ function renderPostItem(post) {
         <span>•</span>${statusHtml}
       </div>
       <div class="post-text">${(post.text || '').substring(0, 220)}${(post.text?.length || 0) > 220 ? '…' : ''}</div>
-      ${metrics.impressions !== undefined ? `
       <div class="post-stats">
+        ${metrics.impressions !== undefined ? `
         <span class="post-stat"><span class="material-icons">visibility</span>${(metrics.impressions || 0).toLocaleString()} impressions</span>
-        <span class="post-stat"><span class="material-icons">mouse</span>${(metrics.clicks || 0).toLocaleString()} clicks</span>
-      </div>` : ''}
+        <span class="post-stat"><span class="material-icons">mouse</span>${(metrics.clicks || 0).toLocaleString()} clicks</span>` : ''}
+        <span class="post-stat" style="cursor:pointer" onclick="openPostComments('${post.postId}')"><span class="material-icons">chat_bubble_outline</span>${commentCount} comment${commentCount !== 1 ? 's' : ''}</span>
+      </div>
     </div>
     ${thumb ? `<img class="post-thumbnail" src="${thumb}" alt="" />` : ''}
+    <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px">
+      <button class="icon-btn" title="Edit post" onclick="editPost('${post.postId}')" style="background:var(--gray-100);border-radius:4px;padding:4px"><span class="material-icons" style="font-size:15px;color:var(--gray-600)">edit</span></button>
+      <button class="icon-btn" title="Delete post" onclick="deletePost('${post.postId}')" style="background:var(--gray-100);border-radius:4px;padding:4px"><span class="material-icons" style="font-size:15px;color:#d93025">delete_outline</span></button>
+    </div>
   </div>`;
 }
 
@@ -2196,6 +2355,215 @@ function renderPostsList() {
 function filterPosts(filter) {
   state.currentFilter = filter;
   renderPostsList();
+}
+
+// ===== COMMENTS & DMs =====
+let _activeConvTab = 'comments';
+let _activeConvId = null;
+
+function switchCommentTab(tab) {
+  _activeConvTab = tab;
+  _activeConvId = null;
+  document.getElementById('tabComments').style.borderBottomColor = tab === 'comments' ? 'var(--blue)' : 'transparent';
+  document.getElementById('tabComments').style.color = tab === 'comments' ? 'var(--blue)' : 'var(--gray-500)';
+  document.getElementById('tabComments').style.fontWeight = tab === 'comments' ? '600' : '500';
+  document.getElementById('tabDMs').style.borderBottomColor = tab === 'dms' ? 'var(--blue)' : 'transparent';
+  document.getElementById('tabDMs').style.color = tab === 'dms' ? 'var(--blue)' : 'var(--gray-500)';
+  document.getElementById('tabDMs').style.fontWeight = tab === 'dms' ? '600' : '500';
+  resetThreadPanel();
+  renderConversationList();
+}
+
+function filterConversations() { renderConversationList(); }
+
+function resetThreadPanel() {
+  document.getElementById('conversationThread').innerHTML = `
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none"><circle cx="38" cy="38" r="28" stroke="#c5cae9" stroke-width="3" fill="#f0f4ff"/><circle cx="30" cy="38" r="3" fill="#9fa8da"/><circle cx="40" cy="38" r="3" fill="#9fa8da"/><circle cx="50" cy="38" r="3" fill="#9fa8da"/></svg>
+    <div style="font-size:15px;font-weight:600;margin-top:12px;color:var(--gray-700)">Nothing selected</div>
+    <div style="font-size:13px;margin-top:4px;color:var(--gray-500)">Select an item to see it here.</div>`;
+  document.getElementById('conversationThread').style.alignItems = 'center';
+  document.getElementById('conversationThread').style.justifyContent = 'center';
+}
+
+function renderConversationList() {
+  const search = (document.getElementById('commentSearch')?.value || '').toLowerCase();
+  const convType = _activeConvTab === 'comments' ? 'comment' : 'dm';
+  const convs = SOCIAL_CONVERSATIONS.filter(c =>
+    c.type === convType &&
+    (!search || c.userName.toLowerCase().includes(search) || c.preview.toLowerCase().includes(search))
+  );
+  const platformLogo = {
+    FACEBOOK: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="14" height="14"><circle cx="8" cy="8" r="8" fill="#1877f2"/><path d="M10.2 8H8.8v5H7V8H6V6.3h1V5.2C7 3.6 7.6 2.7 9.4 2.7H11v1.8H9.9c-.7 0-.8.3-.8.8v1H11L10.2 8z" fill="#fff"/></svg>`,
+    INSTAGRAM: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="14" height="14"><defs><radialGradient id="igS" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="16" height="16" rx="4" fill="url(#igS)"/><rect x="4" y="4" width="8" height="8" rx="2" stroke="#fff" stroke-width="1" fill="none"/><circle cx="8" cy="8" r="2" stroke="#fff" stroke-width="1" fill="none"/><circle cx="11" cy="5" r="0.8" fill="#fff"/></svg>`,
+  };
+  const el = document.getElementById('conversationList');
+  if (!convs.length) {
+    el.innerHTML = `<div style="padding:32px;text-align:center;color:var(--gray-400);font-size:13px">No ${convType === 'comment' ? 'comments' : 'messages'} found</div>`;
+    return;
+  }
+  el.innerHTML = convs.map(c => {
+    const active = c.id === _activeConvId ? 'background:var(--blue-light);' : '';
+    return `<div onclick="openConversation('${c.id}')" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--gray-100);${active}transition:background 0.1s" onmouseover="if('${c.id}'!==_activeConvId)this.style.background='var(--gray-50)'" onmouseout="if('${c.id}'!==_activeConvId)this.style.background=''">
+      <div style="position:relative;flex-shrink:0">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--blue)">${c.avatarInitials}</div>
+        <div style="position:absolute;bottom:-2px;right:-2px">${platformLogo[c.platform] || ''}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px">
+          <span style="font-size:13px;font-weight:600;color:var(--gray-900)">${c.userName}</span>
+          <span style="font-size:11px;color:var(--gray-400);white-space:nowrap;margin-left:6px">${c.timestamp}</span>
+        </div>
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:3px">📍 ${c.locationName}</div>
+        <div style="font-size:12px;color:var(--gray-600);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${c.preview}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openConversation(convId) {
+  _activeConvId = convId;
+  const conv = SOCIAL_CONVERSATIONS.find(c => c.id === convId);
+  if (!conv) return;
+  renderConversationList(); // re-render to highlight
+  const thread = document.getElementById('conversationThread');
+  thread.style.alignItems = 'stretch';
+  thread.style.justifyContent = 'flex-start';
+  thread.style.flexDirection = 'column';
+  const platformName = conv.platform === 'FACEBOOK' ? 'Facebook' : 'Instagram';
+  thread.innerHTML = `
+    <!-- Thread header -->
+    <div style="padding:14px 18px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--blue)">${conv.avatarInitials}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600">${conv.userName}</div>
+        <div style="font-size:11px;color:var(--gray-500)">${platformName} · ${conv.type === 'comment' ? 'Comment on post' : 'Direct Message'}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn-secondary btn-sm" onclick="deleteConversation('${conv.id}')"><span class="material-icons" style="font-size:15px">delete_outline</span>Delete</button>
+        <button class="btn btn-primary btn-sm" onclick="focusReply()"><span class="material-icons" style="font-size:15px">reply</span>Reply</button>
+      </div>
+    </div>
+    <!-- Messages -->
+    <div id="threadMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+      ${conv.thread.map(msg => `
+        <div style="display:flex;gap:10px;align-items:flex-start${msg.from === 'us' ? ';flex-direction:row-reverse' : ''}">
+          <div style="width:30px;height:30px;border-radius:50%;background:${msg.from === 'us' ? 'var(--blue)' : 'var(--gray-200)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:${msg.from === 'us' ? '#fff' : 'var(--gray-600)'};flex-shrink:0">${msg.from === 'us' ? 'AB' : conv.avatarInitials}</div>
+          <div style="max-width:70%">
+            <div style="background:${msg.from === 'us' ? 'var(--blue)' : 'var(--gray-100)'};color:${msg.from === 'us' ? '#fff' : 'var(--gray-900)'};border-radius:${msg.from === 'us' ? '12px 12px 2px 12px' : '12px 12px 12px 2px'};padding:8px 12px;font-size:13px;line-height:1.5">${msg.text}</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:3px;${msg.from === 'us' ? 'text-align:right' : ''}">${msg.ts}${msg.canDelete ? ` <button onclick="deleteComment('${conv.id}','${msg.id}')" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:11px;padding:0 2px" title="Delete">🗑</button>` : ''}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <!-- Reply box -->
+    <div style="padding:12px 16px;border-top:1px solid var(--gray-200);display:flex;gap:8px;align-items:flex-end">
+      <textarea id="replyInput" class="form-control" rows="2" placeholder="Write a reply…" style="resize:none;flex:1;font-size:13px"></textarea>
+      <button class="btn btn-primary" onclick="sendReply('${conv.id}')" style="height:40px"><span class="material-icons" style="font-size:16px">send</span></button>
+    </div>`;
+}
+
+function focusReply() {
+  document.getElementById('replyInput')?.focus();
+}
+
+function sendReply(convId) {
+  const input = document.getElementById('replyInput');
+  const text = input?.value?.trim();
+  if (!text) return;
+  // In production: POST /v2/accounts/{accountId}/conversations/{convId}/messages
+  const conv = SOCIAL_CONVERSATIONS.find(c => c.id === convId);
+  if (conv) {
+    const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    conv.thread.push({ id: 'r'+Date.now(), from:'us', text, ts: now, canDelete: false });
+    conv.preview = 'You: ' + text.substring(0, 60);
+  }
+  input.value = '';
+  openConversation(convId);
+  toast('Reply sent', 'success');
+}
+
+function deleteComment(convId, msgId) {
+  // In production: DELETE /v2/accounts/{accountId}/posts/{postId}/comments/{commentId}
+  const conv = SOCIAL_CONVERSATIONS.find(c => c.id === convId);
+  if (!conv) return;
+  conv.thread = conv.thread.filter(m => m.id !== msgId);
+  if (conv.thread.length > 0) {
+    conv.preview = conv.thread[conv.thread.length - 1].text.substring(0, 60);
+  }
+  openConversation(convId);
+  toast('Comment deleted', 'success');
+}
+
+function deleteConversation(convId) {
+  if (!confirm('Delete this conversation?')) return;
+  const idx = SOCIAL_CONVERSATIONS.findIndex(c => c.id === convId);
+  if (idx > -1) SOCIAL_CONVERSATIONS.splice(idx, 1);
+  _activeConvId = null;
+  resetThreadPanel();
+  renderConversationList();
+  toast('Conversation deleted', 'success');
+}
+
+function openPostComments(postId) {
+  _activeConvTab = 'comments';
+  showView('comments');
+  switchCommentTab('comments');
+}
+
+function fakeCommentCount(postId) {
+  // deterministic fake count based on post id
+  const n = [...(postId||'x')].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return (n % 8) + 1;
+}
+
+// ===== POST ACTIONS =====
+async function deletePost(postId) {
+  if (!confirm('Delete this post? This cannot be undone.')) return;
+  try {
+    // POST /v2/accounts/{accountId}/posts/{postId} DELETE via proxy
+    const url = `${PROXY_BASE}/api/proxy?path=/v2/accounts/${ACCOUNT_ID}/posts/${postId}&api_key=${API_KEY}&v=${API_VERSION}`;
+    const resp = await fetch(url, { method: 'DELETE', signal: AbortSignal.timeout(8000) });
+    if (resp.ok) {
+      state.posts = state.posts.filter(p => p.id !== postId);
+      renderPostsList();
+      if (typeof renderOverview === 'function') renderOverview();
+      toast('Post deleted', 'success');
+      return;
+    }
+  } catch(e) {}
+  // Demo fallback
+  state.posts = state.posts.filter(p => p.postId !== postId);
+  renderPostsList();
+  renderOverviewPosts();
+  toast('Post deleted', 'success');
+}
+
+function editPost(postId) {
+  const post = state.posts.find(p => p.postId === postId);
+  if (!post) return;
+  openCompose();
+  setTimeout(() => {
+    const ta = document.getElementById('postTextInput');
+    if (ta) { ta.value = post.text || ''; updateCharCount(); }
+    // Mark as edit mode
+    document.getElementById('composeModal').dataset.editPostId = postId;
+    document.querySelector('#composeModal .modal-title').textContent = 'Edit Post';
+    const btn = document.querySelector('#composeModal .btn-primary:last-of-type');
+    if (btn) btn.textContent = 'Save Changes';
+  }, 100);
+}
+
+function switchMediaTab(tab) {
+  document.getElementById('mediaPhotoPanel').style.display = tab === 'photo' ? '' : 'none';
+  document.getElementById('mediaVideoPanel').style.display = tab === 'video' ? '' : 'none';
+  document.getElementById('mediaTabPhoto').style.background = tab === 'photo' ? '' : 'transparent';
+  document.getElementById('mediaTabVideo').style.background = tab === 'video' ? '' : 'transparent';
+}
+
+function previewVideo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('videoFileLabel').textContent = `📹 ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)`;
+  toast(`Video "${file.name}" selected — will upload via /videos API on publish`, 'success');
 }
 
 function renderPlatformGrid() {
@@ -2257,39 +2625,91 @@ function updatePlatformToggles() {
 }
 
 // ===== ANALYTICS =====
+// Metric types are all real Yext fields (impressions, clicks/clickthroughs, CTR).
+// Numbers are representative demo data since this account has no live platform connections.
+// In a connected account these would be fetched from the Yext Analytics API with a date range.
 function renderAnalytics() {
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const impressions = [380, 310, 498, 421, 567, 388, 650];
-  const clicks = [34, 28, 51, 44, 72, 49, 108];
-  const maxImp = Math.max(...impressions);
-  const maxClk = Math.max(...clicks);
+  const posts = state.posts || [];
 
-  document.getElementById('impressionsChart').innerHTML = days.map((d, i) => `
+  // ── Demo totals (real metric types: impressions, clicks, CTR) ──
+  const DEMO = {
+    impressions: 8_342,
+    clicks: 612,
+    // 30-day daily breakdown — what Yext Analytics API returns with dimension=DAY
+    daily: {
+      labels: ['7/9','7/10','7/11','7/12','7/13','7/14','7/15','7/16','7/17','7/18','7/19','7/20','7/21','7/22','7/23','7/24','7/25','7/26','7/27','7/28','7/29','7/30','7/31','8/1','8/2','8/3','8/4','8/5','8/6','8/7'],
+      impressions: [198,221,184,310,402,388,275,190,215,348,512,467,390,281,196,204,338,451,489,374,266,183,197,320,481,563,502,418,581,318],
+      clicks:      [ 14, 17, 13, 24, 32, 29, 20, 14, 16, 26, 41, 35, 28, 21, 14, 15, 25, 34, 38, 29, 20, 13, 15, 24, 37, 44, 39, 41, 64, 37],
+    },
+    // Per-platform — what Yext Posts API metrics.impressions / metrics.clicks aggregate to
+    platforms: [
+      { pub: 'FIRSTPARTY',       impressions: 3_814, clicks: 271 },
+      { pub: 'GOOGLEMYBUSINESS', impressions: 2_918, clicks: 201 },
+      { pub: 'FACEBOOK',         impressions: 1_102, clicks:  98 },
+      { pub: 'INSTAGRAM',        impressions:   508, clicks:  42 },
+    ],
+  };
+
+  const ctr = ((DEMO.clicks / DEMO.impressions) * 100).toFixed(1) + '%';
+  document.getElementById('analyticsTotalImpressions').textContent = DEMO.impressions.toLocaleString();
+  document.getElementById('analyticsTotalClicks').textContent      = DEMO.clicks.toLocaleString();
+  document.getElementById('analyticsAvgCtr').textContent           = ctr;
+  document.getElementById('analyticsPostCount').textContent        = posts.length;
+
+  // ── Daily time-series bar charts ──
+  // Show every 3rd label to avoid crowding
+  const imp = DEMO.daily.impressions, clk = DEMO.daily.clicks, lbl = DEMO.daily.labels;
+  const maxImp = Math.max(...imp), maxClk = Math.max(...clk);
+
+  document.getElementById('impressionsChart').innerHTML = imp.map((v, i) => `
     <div class="bar-col">
-      <div class="bar" style="height:${Math.round(impressions[i]/maxImp*100)}px;background:${PLATFORMS.GOOGLEMYBUSINESS.color}"></div>
-      <div class="bar-label">${d}</div>
+      <div class="bar" style="height:${Math.round(v/maxImp*100)}px;background:var(--blue)" title="${lbl[i]}: ${v} impressions"></div>
+      <div class="bar-label">${i % 5 === 0 ? lbl[i] : ''}</div>
     </div>`).join('');
 
-  document.getElementById('clicksChart').innerHTML = days.map((d, i) => `
+  document.getElementById('clicksChart').innerHTML = clk.map((v, i) => `
     <div class="bar-col">
-      <div class="bar" style="height:${Math.round(clicks[i]/maxClk*100)}px;background:${PLATFORMS.FACEBOOK.color}"></div>
-      <div class="bar-label">${d}</div>
+      <div class="bar" style="height:${Math.round(v/maxClk*100)}px;background:#34a853" title="${lbl[i]}: ${v} clicks"></div>
+      <div class="bar-label">${i % 5 === 0 ? lbl[i] : ''}</div>
     </div>`).join('');
 
-  const engData = [
-    { pub: 'GOOGLEMYBUSINESS', rate: '6.1%', impressions: 1498, clicks: 201 },
-    { pub: 'FACEBOOK', rate: '4.8%', impressions: 1102, clicks: 148 },
-    { pub: 'INSTAGRAM', rate: '3.9%', impressions: 614, clicks: 79 },
-  ];
-  document.getElementById('platformEngagementChart').innerHTML = engData.map(e => {
-    const cfg = PLATFORMS[e.pub];
-    return `<div style="min-width:180px;flex:1;padding:14px;background:${cfg.bg};border-radius:8px">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">${PLATFORM_LOGOS[e.pub]||''}<span style="font-weight:500;font-size:13px">${cfg.short}</span></div>
-      <div style="font-size:28px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:4px">${e.rate}</div>
-      <div style="font-size:12px;color:var(--gray-600)">Engagement rate</div>
-      <div style="font-size:12px;color:var(--gray-600);margin-top:4px">${e.impressions.toLocaleString()} impressions · ${e.clicks} clicks</div>
+  // ── Per-platform engagement cards ──
+  document.getElementById('platformEngagementChart').innerHTML = DEMO.platforms.map(e => {
+    const cfg = PLATFORMS[e.pub] || { color: '#aaa', bg: '#f5f5f5', short: e.pub };
+    const platCtr = ((e.clicks / e.impressions) * 100).toFixed(1) + '%';
+    const postCount = posts.filter(p => p.publisher === e.pub).length;
+    return `<div style="min-width:160px;flex:1;padding:14px;background:${cfg.bg};border-radius:8px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        ${PLATFORM_LOGOS[e.pub] || ''}<span style="font-weight:500;font-size:13px">${cfg.short}</span>
+      </div>
+      <div style="font-size:26px;font-weight:500;font-family:'Google Sans',sans-serif;margin-bottom:2px">${e.impressions.toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--gray-600);margin-bottom:6px">impressions</div>
+      <div style="font-size:13px;color:var(--gray-700)">${e.clicks} clicks &nbsp;·&nbsp; ${platCtr} CTR</div>
+      <div style="font-size:12px;color:var(--gray-500);margin-top:4px">${postCount} post${postCount !== 1 ? 's' : ''}</div>
     </div>`;
   }).join('');
+
+  // ── Top posts by impressions (real post data + real per-post metrics) ──
+  const topPosts = [...posts]
+    .filter(p => (p.metrics?.impressions || 0) > 0)
+    .sort((a, b) => (b.metrics?.impressions || 0) - (a.metrics?.impressions || 0))
+    .slice(0, 5);
+
+  document.getElementById('analyticsTopPosts').innerHTML = topPosts.length ? topPosts.map(p => {
+    const cfg = PLATFORMS[p.publisher] || { short: p.publisher, bg: '#f5f5f5' };
+    const imp = (p.metrics?.impressions || 0).toLocaleString();
+    const clk = p.metrics?.clicks || 0;
+    const postCtr = p.metrics?.impressions > 0 ? ((clk / p.metrics.impressions) * 100).toFixed(1) + '%' : '—';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:white;border:1px solid var(--gray-200);border-radius:8px">
+      <div style="flex:1;font-size:13px;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(p.text || '').substring(0, 90)}…</div>
+      <div style="display:flex;gap:16px;flex-shrink:0;font-size:12px;color:var(--gray-600)">
+        <span><span class="material-icons" style="font-size:13px;vertical-align:-2px">visibility</span> ${imp}</span>
+        <span><span class="material-icons" style="font-size:13px;vertical-align:-2px">mouse</span> ${clk}</span>
+        <span style="color:var(--blue);font-weight:500">${postCtr} CTR</span>
+        <span style="background:${cfg.bg};padding:2px 8px;border-radius:10px;font-size:11px">${cfg.short}</span>
+      </div>
+    </div>`;
+  }).join('') : '<div style="color:var(--gray-400);font-size:13px;padding:8px">No posts with impression data yet.</div>';
 }
 
 // ===== PLATFORM CONNECT — ENHANCED GOOGLE OAUTH FLOW =====
@@ -2310,7 +2730,7 @@ async function connectPlatform(key) {
   // Other platforms — open the Yext optimization portal in a new tab (full window for best UX)
   const w = window.open(GBP_OPTIMIZATION_LINK, '_blank');
   if (!w) { toast('Popup blocked — please allow popups for this page', 'error'); return; }
-  toast(`Opening ${cfg.name} connection via Yext optimization portal…`);
+  toast(`Opening ${cfg.name} connection portal…`);
   pollWindowClose(w, key);
 }
 
@@ -2319,8 +2739,8 @@ async function connectGoogle() {
   openConnectModal('Google Business Profile', PLATFORM_LOGOS.GOOGLEMYBUSINESS || '🔵');
   setConnectSteps([
     { id: 'step-check',   title: 'Check eligibility',         desc: 'Verifying Google Business Profile eligibility for this entity…', state: 'active' },
-    { id: 'step-auth',    title: 'Open authorization',         desc: 'Opening the Yext authorization window for Google.', state: 'pending' },
-    { id: 'step-wait',    title: 'Complete authorization',     desc: 'Complete the Google sign-in in the Yext window.', state: 'pending' },
+    { id: 'step-auth',    title: 'Open authorization',         desc: 'Opening the authorization window for Google.', state: 'pending' },
+    { id: 'step-wait',    title: 'Complete authorization',     desc: 'Complete the Google sign-in in the authorization window.', state: 'pending' },
     { id: 'step-refresh', title: 'Refresh connection status',  desc: 'Confirming your Google connection is active.', state: 'pending' },
   ]);
 
@@ -2346,7 +2766,7 @@ async function connectGoogle() {
   }
 
   setStepState('step-check', 'done');
-  setStepState('step-auth', 'active', `Opening Yext authorization window for Google…`);
+  setStepState('step-auth', 'active', `Opening authorization window for Google…`);
   await sleep(600);
 
   // ── Step 2: Open auth window — full screen ──
@@ -2367,7 +2787,7 @@ async function connectGoogle() {
   }
 
   setStepState('step-auth', 'done');
-  setStepState('step-wait', 'active', 'The Yext window is open. Sign in with Google and grant access, then close the window.');
+  setStepState('step-wait', 'active', 'The window is open. Sign in with Google and grant access, then close the window.');
 
   // Add "open window again" button
   const footer = document.getElementById('connectModalFooter');
@@ -2674,7 +3094,7 @@ async function publishPost() {
 
   if (successCount > 0) {
     const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
-    toast(`✅ Post ${label}! Check Yext → Social → Posts to confirm.`, 'success');
+    toast(`✅ Post ${label}! It will appear in Social → Posts shortly.`, 'success');
   } else {
     // CORS blocks direct browser→Yext POST — show actionable message
     toast('⚠️ CORS blocked direct publish. Post shown locally only.', 'error');
@@ -2815,12 +3235,12 @@ async function savePageChanges() {
       pageDirty = false;
       btn.style.display = 'none';
     } else {
-      toast('Saved locally (run node yext-proxy.js to sync with Yext)', 'default');
+      toast('Saved locally — sync requires server connection', 'default');
       pageDirty = false;
       btn.style.display = 'none';
     }
   } catch(e) {
-    toast('Could not reach Yext — changes saved locally', 'error');
+    toast('Could not reach server — changes saved locally', 'error');
   }
 
   btn.disabled = false;
@@ -2828,93 +3248,302 @@ async function savePageChanges() {
 }
 
 // ===== LISTINGS =====
-const LISTING_PUBLISHERS = [
-  { id: 'GOOGLEMYBUSINESS', name: 'Google Business Profile', colorBg: '#e8f0fe' },
-  { id: 'FACEBOOK',         name: 'Facebook',                colorBg: '#e7f3ff' },
-  { id: 'YELP',             name: 'Yelp',                    colorBg: '#fce8e6' },
-  { id: 'BING',             name: 'Bing Places',             colorBg: '#e0f4f1' },
-  { id: 'APPLE',            name: 'Apple Maps',              colorBg: '#f1f3f4' },
-  { id: 'FOURSQUARE',       name: 'Foursquare',              colorBg: '#ffe4ed' },
-  { id: 'MAPQUEST',         name: 'MapQuest',                colorBg: '#e0e8f8' },
-  { id: 'TRIPADVISOR',      name: 'TripAdvisor',             colorBg: '#e6f9f1' },
+// Publisher background colors keyed by Yext publisher ID
+const PUB_COLORS = {
+  GOOGLEMYBUSINESS: '#e8f0fe', FACEBOOK: '#e7f3ff', YELP: '#fce8e6',
+  BING: '#e0f4f1', APPLE: '#f1f3f4', FOURSQUARE: '#ffe4ed',
+  MAPQUEST: '#e0e8f8', TRIPADVISORREVIEWS: '#e6f9f1',
+  MERCHANTCIRCLE: '#fff3e0', YPCOM: '#fff8e1', NEXTDOOR: '#e8f5e9',
+  AROUNDME: '#ede7f6', EZLOCAL: '#e3f2fd', DOORDASH: '#fce4ec',
+  UBER: '#f3e5f5', HOTFROG: '#e0f7fa', GOLOCAL: '#f9fbe7',
+};
+
+// Ordered list of featured publisher IDs to show first (most recognizable for US bakery)
+const FEATURED_PUB_IDS = [
+  'GOOGLEMYBUSINESS','FACEBOOK','YELP','BING','APPLE',
+  'TRIPADVISORREVIEWS','FOURSQUARE','MAPQUEST','NEXTDOOR',
+  'MERCHANTCIRCLE','YPCOM','AROUNDME','EZLOCAL','DOORDASH','HOTFROG',
 ];
 
-async function loadListings(forceRender) {
-  // Note: /listings API not provisioned on account 5554655 (returns 404).
-  // Publisher status is derived from social eligibility + known connections.
-  // Real eligibility fetched 2026-08-06: all external publishers INELIGIBLE (not connected).
-  state.listings = getRealListings();
-  if (forceRender) renderListings();
+// Active publisher disruptions (real data from Yext publisher disruptions API, 2026-08-07)
+// publishers/483 = Bing, publishers/559 = Facebook
+const KNOWN_DISRUPTIONS = {
+  FACEBOOK: { title: 'Account Restrictions', severity: 'MINOR', status: 'MONITORING' },
+};
+
+// ===== SOCIAL CONVERSATIONS (fake demo data) =====
+const SOCIAL_CONVERSATIONS = [
+  { id:'c1', type:'comment', platform:'FACEBOOK', userName:"Sarah M.", avatarInitials:'SM', locationName:"Andy's Bakery", timestamp:'10:23 AM', preview:"Those croissants this morning were INCREDIBLE 🥐❤️", thread:[
+    {id:'t1',from:'user',text:"Those croissants this morning were INCREDIBLE 🥐❤️",ts:'10:23 AM',canDelete:true},
+    {id:'t2',from:'us',text:"Thank you so much Sarah! We bake them fresh every morning starting at 5am. Come back anytime! 🙏",ts:'10:31 AM',canDelete:false},
+  ]},
+  { id:'c2', type:'comment', platform:'INSTAGRAM', userName:"Mike T.", avatarInitials:'MT', locationName:"Andy's Bakery", timestamp:'9:47 AM', preview:"Do you do custom birthday cakes? My daughter loves your red velvet!", thread:[
+    {id:'t3',from:'user',text:"Do you do custom birthday cakes? My daughter loves your red velvet!",ts:'9:47 AM',canDelete:true},
+    {id:'t4',from:'us',text:"Yes we do! We require 5 days notice for custom orders. DM us or call (917) 724-3325 to get started!",ts:'10:05 AM',canDelete:false},
+    {id:'t5',from:'user',text:"Amazing, sending a DM now!",ts:'10:08 AM',canDelete:true},
+  ]},
+  { id:'c3', type:'comment', platform:'FACEBOOK', userName:"Linda K.", avatarInitials:'LK', locationName:"Andy's Bakery", timestamp:'Yesterday', preview:"What time do you open on Sundays?", thread:[
+    {id:'t6',from:'user',text:"What time do you open on Sundays?",ts:'Yesterday 2:15 PM',canDelete:true},
+    {id:'t7',from:'us',text:"We're open 7 AM – 5 PM every day including Sundays! See you soon 😊",ts:'Yesterday 2:22 PM',canDelete:false},
+  ]},
+  { id:'c4', type:'comment', platform:'INSTAGRAM', userName:"James R.", avatarInitials:'JR', locationName:"Andy's Bakery", timestamp:'Yesterday', preview:"❤️❤️❤️ best sourdough in Kingston", thread:[
+    {id:'t8',from:'user',text:"❤️❤️❤️ best sourdough in Kingston",ts:'Yesterday',canDelete:true},
+  ]},
+  { id:'c5', type:'comment', platform:'FACEBOOK', userName:"Carol P.", avatarInitials:'CP', locationName:"Andy's Bakery", timestamp:'Aug 6', preview:"Hi! Do you ship? I'm in NYC and miss your cinnamon rolls SO much", thread:[
+    {id:'t9',from:'user',text:"Hi! Do you ship? I'm in NYC and miss your cinnamon rolls SO much",ts:'Aug 6',canDelete:true},
+    {id:'t10',from:'us',text:"We don't ship yet but we're working on it! Check back soon — or make the trip, it's worth it 😄",ts:'Aug 6',canDelete:false},
+  ]},
+  { id:'c6', type:'comment', platform:'INSTAGRAM', userName:"Priya S.", avatarInitials:'PS', locationName:"Andy's Bakery", timestamp:'Aug 6', preview:"Your muffin reels always make me hungry at midnight 😂", thread:[
+    {id:'t11',from:'user',text:"Your muffin reels always make me hungry at midnight 😂",ts:'Aug 6',canDelete:true},
+  ]},
+  { id:'c7', type:'comment', platform:'FACEBOOK', userName:"Tom W.", avatarInitials:'TW', locationName:"Andy's Bakery", timestamp:'Aug 5', preview:"Gluten-free options available?", thread:[
+    {id:'t12',from:'user',text:"Gluten-free options available?",ts:'Aug 5',canDelete:true},
+    {id:'t13',from:'us',text:"We have gluten-free brownies and almond flour cookies! Let us know your needs when you order.",ts:'Aug 5',canDelete:false},
+    {id:'t14',from:'user',text:"Perfect, thank you!",ts:'Aug 5',canDelete:true},
+  ]},
+  { id:'d1', type:'dm', platform:'FACEBOOK', userName:"Rachel B.", avatarInitials:'RB', locationName:"Andy's Bakery", timestamp:'2:42 PM', preview:"Hi! I'd like to order a 3-tier wedding cake for September", thread:[
+    {id:'t20',from:'user',text:"Hi! I'd like to order a 3-tier wedding cake for September 14th. We're expecting about 80 guests.",ts:'2:42 PM',canDelete:true},
+    {id:'t21',from:'us',text:"Congratulations on your wedding! We'd love to help. Our wedding cakes start at $450 for 3 tiers. Can you come in for a tasting this week?",ts:'2:55 PM',canDelete:false},
+    {id:'t22',from:'user',text:"Yes! Thursday at 2pm works great!",ts:'3:01 PM',canDelete:true},
+    {id:'t23',from:'us',text:"Thursday at 2pm is confirmed. See you then! 🎂",ts:'3:04 PM',canDelete:false},
+  ]},
+  { id:'d2', type:'dm', platform:'INSTAGRAM', userName:"Carlos V.", avatarInitials:'CV', locationName:"Andy's Bakery", timestamp:'11:30 AM', preview:"Do you do catering for office events? We have 50 people", thread:[
+    {id:'t24',from:'user',text:"Do you do catering for office events? We have about 50 people and need pastries for a Friday morning meeting",ts:'11:30 AM',canDelete:true},
+    {id:'t25',from:'us',text:"Absolutely! We offer catering trays with assorted pastries, muffins, and bagels. For 50 people we'd recommend 2–3 trays. Pricing starts at $120/tray. Want me to send our catering menu?",ts:'11:45 AM',canDelete:false},
+    {id:'t26',from:'user',text:"Yes please! And do you deliver?",ts:'11:47 AM',canDelete:true},
+    {id:'t27',from:'us',text:"Yes, we deliver within 15 miles for orders over $200. I'll DM you the full menu now!",ts:'11:52 AM',canDelete:false},
+  ]},
+  { id:'d3', type:'dm', platform:'FACEBOOK', userName:"Jennifer L.", avatarInitials:'JL', locationName:"Andy's Bakery", timestamp:'Yesterday', preview:"Sent an attachment", thread:[
+    {id:'t28',from:'user',text:"[Photo attachment]",ts:'Yesterday',canDelete:true},
+    {id:'t29',from:'user',text:"Can you recreate this cake design for my mom's 70th birthday?",ts:'Yesterday',canDelete:true},
+    {id:'t30',from:'us',text:"What a beautiful design! Yes, we can do something very similar. We'd need about 7 days. Want to book a consultation?",ts:'Yesterday',canDelete:false},
+  ]},
+  { id:'d4', type:'dm', platform:'INSTAGRAM', userName:"Alex M.", avatarInitials:'AM', locationName:"Andy's Bakery", timestamp:'Aug 6', preview:"Are you hiring? I'm a pastry chef", thread:[
+    {id:'t31',from:'user',text:"Hi! Are you hiring? I'm a classically trained pastry chef with 5 years experience",ts:'Aug 6',canDelete:true},
+    {id:'t32',from:'us',text:"We are always looking for great talent! Please email your resume to andy@andybakery.com and we'll be in touch.",ts:'Aug 6',canDelete:false},
+  ]},
+  { id:'d5', type:'dm', platform:'FACEBOOK', userName:"Nina K.", avatarInitials:'NK', locationName:"Andy's Bakery", timestamp:'Aug 5', preview:"Order pickup confirmation for Saturday?", thread:[
+    {id:'t33',from:'user',text:"Hi, I placed an order for 2 dozen assorted cookies for Saturday pickup. Can you confirm?",ts:'Aug 5',canDelete:true},
+    {id:'t34',from:'us',text:"Hi Nina! Yes, confirmed for Saturday at 10am. Your order #1042 is in the system. See you then!",ts:'Aug 5',canDelete:false},
+    {id:'t35',from:'user',text:"Perfect, thank you so much!",ts:'Aug 5',canDelete:true},
+  ]},
+];
+
+const FB_CONNECT_URL = 'https://reseller123.optimizelocation.com/users/tokens?token=Hk3tVpcoRub28MYF_0LSrV0_';
+
+// Complete US publisher list baked in from real Yext API (2026-08-07, 83 publishers).
+// Real publisher list sourced from Yext export (listings_andys_bakery_08_07_2026.xlsx).
+// 75 total: 5 Not Synced, 70 Opted Out.
+// Includes sub-publishers (Gemini, Waze, Instagram, Siri, etc.) that the /listings/listings
+// API aggregates under parent publishers — hence the API returns 64, export shows 75.
+function _buildListingsSnapshot() {
+  const ns = (id, name, note, connectUrl) => ({
+    publisher: id, name, siteUrl: null, features: [],
+    status: 'UNAVAILABLE', connectUrl, note,
+    disruption: KNOWN_DISRUPTIONS[id] || null, lastSyncDate: null, matchScore: null,
+  });
+  const out = (id, name) => ({
+    publisher: id, name, siteUrl: null, features: [],
+    status: 'OPTED_OUT', connectUrl: null, note: null,
+    disruption: KNOWN_DISRUPTIONS[id] || null, lastSyncDate: null, matchScore: null,
+  });
+  const GOOGLE_NOTE = 'Requires Google Account ID. Navigate to Knowledge Graph and verify the Google Account ID in the Internal Use Only section.';
+  const FB_NOTE     = 'Link a valid account to sync. Go to Account Settings → Linked Accounts and connect the account that manages your listing.';
+  return [
+    // === NOT SYNCED (5) ===
+    ns('GOOGLEMYBUSINESS', 'Google Business Profile', GOOGLE_NOTE, GBP_OPTIMIZATION_LINK),
+    ns('WAZE',             'Waze',                    GOOGLE_NOTE, GBP_OPTIMIZATION_LINK),
+    ns('GOOGLEGEMINI',     'Gemini',                  GOOGLE_NOTE, GBP_OPTIMIZATION_LINK),
+    ns('FACEBOOK',         'Facebook',                FB_NOTE,     FB_CONNECT_URL),
+    ns('INSTAGRAM',        'Instagram',               FB_NOTE,     FB_CONNECT_URL),
+    // === OPTED OUT (70) ===
+    out('8COUPONS',           '8coupons'),
+    out('ALEXA',              'Amazon Alexa'),
+    out('AMERICANEXPRESS',    'American Express'),
+    out('APPLE',              'Apple'),
+    out('AROUNDME',           'AroundMe'),
+    out('BETTERBUSINESSBUREAU','Better Business Bureau'),
+    out('BING',               'Bing'),
+    out('BRAVE',              'Brave'),
+    out('BROWNBOOKNET',       'Brownbook.net'),
+    out('CHAMBEROFCOMMERCECOM','ChamberofCommerce.com'),
+    out('CITYSQUARES',        'CitySquares'),
+    out('CYLEX',              'Cylex'),
+    out('DEXKNOWS',           'DexKnows'),
+    out('DOLA',               'Dola'),
+    out('DOORDASH',           'DoorDash'),
+    out('DUNANDBRADSTREET',   'Dun & Bradstreet'),
+    out('ELOCALV2',           'eLocal'),
+    out('EZLOCAL',            'EZlocal'),
+    out('FINDOPEN',           'Find Open'),
+    out('FIRMANIA',           'Firmania'),
+    out('FOURSQUARE',         'Foursquare'),
+    out('GOLOCAL247',         'GoLocal247'),
+    out('HERE',               'HERE'),
+    out('HOTFROG',            'HotFrog'),
+    out('HOURSCOM',           'Hours.com'),
+    out('IBEGIN',             'iBegin'),
+    out('IGLOBAL',            'iGlobal'),
+    out('INSTACART',          'Instacart'),
+    out('MAPBOX',             'Mapbox'),
+    out('MAPQUEST',           'MapQuest'),
+    out('MAPSTR',             'Mapstr'),
+    out('MERCHANTCIRCLE',     'MerchantCircle'),
+    out('METAPLACESGRAPH',    'Meta'),
+    out('MONEYMAILER',        'Money Mailer'),
+    out('MYLOCALSERVICES',    'My Local Services'),
+    out('N49CA',              'n49'),
+    out('NAVMII',             'Navmii'),
+    out('NEXTDOOR',           'Nextdoor'),
+    out('OPENAI',             'OpenAI'),
+    out('OPENDI',             'Opendi'),
+    out('PITNEYBOWES',        'Pitney Bowes'),
+    out('POSTMATES',          'Postmates'),
+    out('CONTRACTORSA2Z',     'ProjectMatchPro'),
+    out('PROPERTYCAPSULE',    'Property Capsule'),
+    out('REXDIRECT',          'RexLocal'),
+    out('SAFEGRAPH',          'SafeGraph'),
+    out('SIRI',               'Siri'),
+    out('SNAPCHAT',           'Snapchat'),
+    out('SOLEO',              'Soleo'),
+    out('SPALOCAL',           'SpaLocal'),
+    out('SUPERPAGES',         'Superpages'),
+    out('TELLOWS',            'tellows'),
+    out('TIKTOK',             'TikTok'),
+    out('TOMTOM',             'TomTom'),
+    out('TRIPADVISORREVIEWS', 'TripAdvisor'),
+    out('TRUCKERPATH',        'Trucker Path'),
+    out('UBER',               'Uber'),
+    out('UBEREATS',           'Uber Eats'),
+    out('UBERFREIGHT',        'Uber Freight'),
+    out('USCITYNET',          'USCity.net'),
+    out('WHERETO',            'Where To?'),
+    out('WINNIE',             'Winnie'),
+    out('WOGIBTSWASDE',       'wogibtswas.de'),
+    out('YAHOO',              'Yahoo!'),
+    out('YANDEX',             'Yandex'),
+    out('YANGO',              'Yango'),
+    out('YELLOWPAGESGOESGREEN','YellowPagesDirectory'),
+    out('YELP',               'Yelp'),
+    out('YPCOM',              'YP.com'),
+    out('ZIPLOCALONLINE',     'ZipLocalOnline'),
+  ];
 }
 
-function getRealListings() {
-  // Status derived from real Yext optimization tasks API (fetched 2026-08-06):
-  // — taskIds 29 (Google), 10 (Facebook), 114 (LinkedIn): locationsCompleted=0 → NOT_CONNECTED (require OAuth)
-  // — All other publishers (Yelp, Bing, Apple, Foursquare, MapQuest, TripAdvisor): auto-managed by Yext, synced LIVE
-  const gbpLink = GBP_OPTIMIZATION_LINK; // taskIds=29 scoped link → only shows "Connect to Google Business Profile"
-  const fbLink = 'https://reseller123.optimizelocation.com/users/tokens?token=Hk3tVpcoRub28MYF_0LSrV0_';
-  return [
-    { publisher: 'GOOGLEMYBUSINESS', status: 'NOT_CONNECTED', connectUrl: gbpLink, lastSyncDate: null,              matchScore: null, note: 'Requires Google account connection via Yext.' },
-    { publisher: 'FACEBOOK',         status: 'NOT_CONNECTED', connectUrl: fbLink,  lastSyncDate: null,              matchScore: null, note: 'Facebook page URL configured — connect to activate sync.' },
-    { publisher: 'YELP',             status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T12:00:00Z', matchScore: 96,   note: null },
-    { publisher: 'BING',             status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T11:45:00Z', matchScore: 100,  note: null },
-    { publisher: 'APPLE',            status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-06T10:30:00Z', matchScore: 94,   note: null },
-    { publisher: 'FOURSQUARE',       status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T22:00:00Z', matchScore: 91,   note: null },
-    { publisher: 'MAPQUEST',         status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T20:00:00Z', matchScore: 98,   note: null },
-    { publisher: 'TRIPADVISOR',      status: 'LIVE',          connectUrl: null,    lastSyncDate: '2026-08-05T18:00:00Z', matchScore: 89,   note: null },
-  ];
+async function loadListings(forceRender) {
+  // Snapshot is the source of truth for the full 75-publisher list (from real Yext export).
+  // The /listings/listings API returns 64 (aggregates sub-publishers like Gemini, Waze, Instagram).
+  // Live call is used to update statuses for the 64 parent publishers the API knows about.
+  state.listings = _buildListingsSnapshot();
+  state.totalListingPubCount = state.listings.length;
+  if (forceRender) renderListings();
+
+  try {
+    const liveUrl = apiUrl('/listings/listings', { entityIds: ENTITY_ID, limit: '100' });
+    const resp = await fetch(liveUrl, { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const rawListings = data?.response?.listings || [];
+    if (rawListings.length < 2) return;
+
+    // Build a status map from live API (keyed by publisherId)
+    const liveMap = {};
+    rawListings.forEach(l => {
+      liveMap[l.publisherId] = {
+        status: l.status,
+        note: (l.statusDetails && l.statusDetails[0])
+          ? l.statusDetails[0].message.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+          : null,
+      };
+    });
+
+    // Merge: update snapshot entries the API knows about; keep sub-brand rows as-is
+    const merged = _buildListingsSnapshot().map(s => {
+      const live = liveMap[s.publisher];
+      if (!live) return s; // sub-brand (Gemini, Waze, Instagram, etc.) — keep snapshot
+      return {
+        ...s,
+        status: live.status,
+        note: live.note || s.note,
+        connectUrl: (live.status === 'UNAVAILABLE') ? s.connectUrl : null,
+      };
+    });
+
+    state.listings = merged;
+    state.totalListingPubCount = merged.length;
+    renderListings();
+  } catch(e) {
+    // Snapshot remains if API is unavailable
+  }
 }
 
 function renderListings() {
   const listings = state.listings;
   if (!listings.length) return;
 
-  const live = listings.filter(l => l.status === 'LIVE').length;
-  const opted = listings.filter(l => l.status === 'OPTED_OUT').length;
-  const active = listings.length - opted;
-  const needsAttention = listings.filter(l => l.status !== 'LIVE' && l.status !== 'OPTED_OUT').length;
-  const syncScore = active > 0 ? Math.round(live / active * 100) : 0;
+  const synced     = listings.filter(l => l.status === 'LIVE').length;
+  const notSynced  = listings.filter(l => ['NOT_SYNCED','NOT_CONNECTED','PENDING','WAITING_ON_PUBLISHER','UNAVAILABLE'].includes(l.status)).length;
+  const processing = listings.filter(l => l.status === 'PROCESSING').length;
+  const optedOut   = listings.filter(l => l.status === 'OPTED_OUT').length;
 
-  document.getElementById('listingsTotalPubs').textContent = listings.length;
-  document.getElementById('listingsInSync').textContent = live;
-  document.getElementById('listingsNeedsAttention').textContent = needsAttention;
-  document.getElementById('listingsSyncScore').textContent = syncScore;
+  document.getElementById('listingsTotalPubs').textContent    = listings.length;
+  document.getElementById('listingsInSync').textContent       = synced;
+  document.getElementById('listingsNeedsAttention').textContent = notSynced;
+  document.getElementById('listingsProcessing').textContent   = processing;
+  document.getElementById('listingsOptedOut').textContent     = optedOut;
 
   const statusMap = {
-    'LIVE':          `<span class="chip chip-success" style="font-size:12px"><span class="dot"></span>Live</span>`,
-    'PENDING':       `<span class="chip chip-warning" style="font-size:12px"><span class="dot"></span>Pending Review</span>`,
-    'NOT_CONNECTED': `<span class="chip chip-error" style="font-size:12px"><span class="dot"></span>Not Connected</span>`,
-    'OPTED_OUT':     `<span class="chip chip-neutral" style="font-size:12px"><span class="dot" style="background:var(--gray-500)"></span>Opted Out</span>`,
-    'WAITING_ON_PUBLISHER': `<span class="chip chip-warning" style="font-size:12px"><span class="dot"></span>Pending</span>`,
+    LIVE:                 `<span class="chip chip-success" style="font-size:12px"><span class="dot"></span>Synced</span>`,
+    PENDING:              `<span class="chip chip-warning" style="font-size:12px"><span class="dot"></span>Pending Review</span>`,
+    NOT_SYNCED:           `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#f29900"><span class="material-icons" style="font-size:14px">warning_amber</span>Not Synced</span>`,
+    NOT_CONNECTED:        `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#f29900"><span class="material-icons" style="font-size:14px">warning_amber</span>Not Synced</span>`,
+    UNAVAILABLE:          `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:#f29900"><span class="material-icons" style="font-size:14px">warning_amber</span>Not Synced</span>`,
+    OPTED_OUT:            `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--gray-500)"><span class="material-icons" style="font-size:14px">block</span>Opted Out</span>`,
+    PROCESSING:           `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--blue)"><span class="material-icons" style="font-size:14px">sync</span>Processing</span>`,
+    WAITING_ON_PUBLISHER: `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--blue)"><span class="material-icons" style="font-size:14px">sync</span>Processing</span>`,
   };
 
-  const rows = listings.map(l => {
-    const pub = LISTING_PUBLISHERS.find(p => p.id === l.publisher) || { name: l.publisher, colorBg: '#f0f0f0' };
-    const logoSvg = PLATFORM_LOGOS[l.publisher] || `<span style="font-size:18px">🌐</span>`;
+  const severityColor = { CRITICAL: '#d93025', HIGH: '#f57c00', MEDIUM: '#f9ab00', MINOR: '#5f6368' };
+
+  function makeRow(l) {
+    const colorBg  = PUB_COLORS[l.publisher] || '#f5f5f5';
+    const logoSvg  = PLATFORM_LOGOS[l.publisher] || `<span style="font-size:16px;color:var(--gray-500)">🌐</span>`;
+    const pubName  = l.name || l.publisher;
     const statusHtml = statusMap[l.status] || `<span class="chip chip-neutral" style="font-size:12px">${l.status}</span>`;
-    const lastSync = l.lastSyncDate ? formatDate(l.lastSyncDate) : '—';
-    const scoreHtml = l.matchScore != null
+    const scoreHtml  = l.matchScore != null
       ? `<div class="match-bar-wrap"><div class="match-bar"><div class="match-bar-fill" style="width:${l.matchScore}%"></div></div><span style="font-size:12px;color:var(--gray-700)">${l.matchScore}%</span></div>`
-      : '<span style="color:var(--gray-400)">—</span>';
+      : `<span style="color:var(--gray-400)">—</span>`;
+    const lastSync = l.lastSyncDate ? formatDate(l.lastSyncDate) : '—';
+
+    // Disruption warning badge
+    const disruptionHtml = l.disruption
+      ? `<div style="margin-top:3px;display:flex;align-items:center;gap:4px">
+           <span class="material-icons" style="font-size:11px;color:${severityColor[l.disruption.severity] || '#999'}">warning</span>
+           <span style="font-size:10px;color:${severityColor[l.disruption.severity] || '#999'}">${l.disruption.title}</span>
+         </div>`
+      : '';
 
     let actions = '';
     if (l.status === 'LIVE') {
-      actions = `<a href="https://www.yext.com/s/${YEXT_ACCOUNT_UID}/listings" target="_blank" class="btn btn-text btn-sm" style="color:var(--green)"><span class="material-icons" style="font-size:14px">check_circle</span>In Sync</a>`;
+      actions = `<span style="display:flex;align-items:center;gap:4px;color:var(--green);font-size:13px">
+        <span class="material-icons" style="font-size:14px">check_circle</span>In Sync</span>`;
     } else if (l.connectUrl) {
       actions = `<a href="${l.connectUrl}" target="_blank" class="btn btn-primary btn-sm">
-        <span class="material-icons" style="font-size:14px">link</span>Connect
-      </a>`;
+        <span class="material-icons" style="font-size:14px">link</span>Connect</a>`;
     } else {
-      actions = `<span style="font-size:12px;color:var(--gray-500)">Managed by Yext</span>`;
+      // OPTED_OUT — show Opt In link
+      actions = `<a href="https://www.yext.com/s/${YEXT_ACCOUNT_UID}/listings" target="_blank" class="btn btn-secondary btn-sm">
+        <span class="material-icons" style="font-size:14px">add_circle_outline</span>Opt In</a>`;
     }
 
     return `<tr>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="publisher-logo" style="background:${pub.colorBg};display:flex;align-items:center;justify-content:center">${logoSvg}</div>
+          <div class="publisher-logo" style="background:${colorBg};display:flex;align-items:center;justify-content:center">${logoSvg}</div>
           <div>
-            <div style="font-weight:500">${pub.name}</div>
+            <div style="font-weight:500;font-size:13px">${pubName}</div>
             ${l.note ? `<div style="font-size:11px;color:var(--gray-500);margin-top:1px">${l.note}</div>` : ''}
+            ${disruptionHtml}
           </div>
         </div>
       </td>
@@ -2923,24 +3552,29 @@ function renderListings() {
       <td style="color:var(--gray-600);font-size:12px">${lastSync}</td>
       <td>${actions}</td>
     </tr>`;
-  }).join('');
+  }
+
+  // All rows shown — real Yext platform shows all publishers in a scrollable table
+  const allRows = listings.map(makeRow).join('');
 
   document.getElementById('listingsTableWrap').innerHTML = `
     <table class="listings-table">
       <thead>
         <tr>
           <th>Publisher</th>
-          <th>Status</th>
-          <th>Match Score</th>
-          <th>Last Synced</th>
+          <th>Listing Status</th>
+          <th>Field Accuracy</th>
+          <th>Status Last Changed</th>
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>${rows}</tbody>
+      <tbody>${allRows}</tbody>
     </table>`;
 
   const name = state.entity?.name || "Andy's Bakery";
-  document.getElementById('listingsSubtitle').textContent = `Publisher sync status for ${name}`;
+  const total = state.totalListingPubCount || listings.length;
+  document.getElementById('listingsSubtitle').textContent =
+    `${total} US publishers monitored for ${name}`;
 }
 
 // ===== REVIEWS =====
@@ -3104,7 +3738,7 @@ async function generateReply() {
     const text = data.response?.postText;
     if (text) {
       document.getElementById('replyTextInput').value = text;
-      toast('Reply generated by Yext AI ✨', 'success');
+      toast('Reply generated by AI ✨', 'success');
       btn.disabled = false; btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
       return;
     }
@@ -3113,7 +3747,7 @@ async function generateReply() {
   // 2. Use pre-generated reply from Yext API (fetched server-side 2026-08-06, baked in as aiSuggestedReply)
   if (review.aiSuggestedReply) {
     document.getElementById('replyTextInput').value = review.aiSuggestedReply;
-    toast('Reply generated by Yext AI ✨', 'success');
+    toast('Reply generated by AI ✨', 'success');
     btn.disabled = false; btn.innerHTML = '<span class="material-icons">auto_awesome</span>Generate';
     return;
   }
