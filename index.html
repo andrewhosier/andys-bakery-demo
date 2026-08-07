@@ -1801,14 +1801,14 @@ function apiUrl(path, params = {}) {
 }
 
 // Proxy detection — the local CORS proxy (node yext-proxy.js) makes write operations work
-const PROXY_BASE = 'http://localhost:3001';
+const PROXY_BASE = 'https://yext-proxy.vercel.app';
 let proxyAvailable = null; // null=unknown, true/false after first check
 
 async function checkProxy() {
   if (proxyAvailable !== null) return proxyAvailable;
   try {
-    const probeUrl = `${PROXY_BASE}/v2/accounts/${ACCOUNT_ID}/entities/${ENTITY_ID}?api_key=${API_KEY}&v=${API_VERSION}`;
-    const res = await fetch(probeUrl, { signal: AbortSignal.timeout(1500) });
+    const probeUrl = `${PROXY_BASE}/api/proxy?path=/v2/accounts/${ACCOUNT_ID}/entities/${ENTITY_ID}&api_key=${API_KEY}&v=${API_VERSION}`;
+    const res = await fetch(probeUrl, { signal: AbortSignal.timeout(3000) });
     proxyAvailable = res.ok;
   } catch(e) { proxyAvailable = false; }
   console.log('Proxy available:', proxyAvailable);
@@ -1816,13 +1816,22 @@ async function checkProxy() {
 }
 
 function buildUrl(path, params = {}) {
-  // Use proxy base if available, otherwise direct Yext (will fail on write due to CORS)
-  const base = proxyAvailable ? PROXY_BASE : API_BASE;
-  const u = new URL();
-  u.searchParams.set('api_key', API_KEY);
-  u.searchParams.set('v', API_VERSION);
-  Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
-  return u.toString();
+  if (proxyAvailable) {
+    // Vercel proxy: pass the full Yext path as ?path= so the edge function can forward it
+    const u = new URL(`${PROXY_BASE}/api/proxy`);
+    u.searchParams.set('path', `/v2/accounts/${ACCOUNT_ID}${path}`);
+    u.searchParams.set('api_key', API_KEY);
+    u.searchParams.set('v', API_VERSION);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    return u.toString();
+  } else {
+    // Direct Yext API (GET-only; POST will be blocked by CORS)
+    const u = new URL(`${API_BASE}/v2/accounts/${ACCOUNT_ID}${path}`);
+    u.searchParams.set('api_key', API_KEY);
+    u.searchParams.set('v', API_VERSION);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    return u.toString();
+  }
 }
 
 async function apiFetch(path, options = {}, params = {}) {
@@ -1847,7 +1856,7 @@ async function apiFetch(path, options = {}, params = {}) {
   }
 }
 
-// Write-capable fetch — always tries proxy first, then direct
+// Write-capable fetch — tries proxy first (avoids CORS), then falls back to direct Yext API
 async function apiWrite(path, body, params = {}, method = 'POST') {
   await checkProxy();
   const url = buildUrl(path, params);
@@ -1861,6 +1870,11 @@ async function apiWrite(path, body, params = {}, method = 'POST') {
       body: JSON.stringify(body)
     });
     clearTimeout(timer);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      const msg = errData.meta?.errors?.[0]?.message || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
     const data = await res.json();
     if (data.meta?.errors?.length) throw new Error(data.meta.errors[0].message);
     return data.response;
@@ -2658,9 +2672,16 @@ async function publishPost() {
 
   if (successCount > 0) {
     const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
-    toast(`Post ${label} to Yext! (${successCount}/${platforms.length} platform${platforms.length !== 1 ? 's' : ''})`, 'success');
+    toast(`✅ Post ${label}! Check Yext → Social → Posts to confirm.`, 'success');
   } else {
-    toast('Post published (demo mode — run: node yext-proxy.js to sync with Yext)', 'default');
+    // CORS blocks direct browser→Yext POST — show actionable message
+    toast('⚠️ CORS blocked direct publish. Post shown locally only.', 'error');
+    console.info(
+      '%c Yext Social Posts API requires a server-side call (CORS blocks browser POST).\n' +
+      'To make publish work from the deployed site, a proxy endpoint is needed.\n' +
+      'Contact Andy or add a Yext Pages Function / Vercel edge function as the proxy.',
+      'color: orange'
+    );
   }
 }
 
