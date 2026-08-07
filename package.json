@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Andy's Bakery — Yext Pages location site",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
