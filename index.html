@@ -2579,7 +2579,8 @@ async function generatePost() {
       tone: 'friendly'
     };
 
-    const url = apiUrl(`/accounts/${ACCOUNT_ID}/posts/generatePostText`);
+    await checkProxy();
+    const url = buildUrl('/posts/generatePostText');
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -3096,7 +3097,8 @@ async function generateReply() {
       entityIds: [ENTITY_ID],
       publishers: ['FIRSTPARTY'],
     };
-    const url = apiUrl(`/accounts/${ACCOUNT_ID}/posts/generatePostText`);
+    await checkProxy();
+    const url = buildUrl('/posts/generatePostText');
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     const data = await res.json();
     const text = data.response?.postText;
