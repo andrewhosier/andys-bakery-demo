@@ -2114,6 +2114,8 @@ async function loadAll() {
 
   // 3. Attempt live refresh in background — silently updates if CORS allows, otherwise no-op
   liveRefreshAll();
+  // Poll for live post updates every 30 seconds so the dashboard stays in sync with Yext
+  setInterval(liveRefreshPosts, 30000);
 
   // 4. Fetch real listings publisher list in background (GET, no proxy needed)
   loadListings(false); // false = don't force-render; renderListings() called on view switch
@@ -2186,8 +2188,9 @@ function updateEntityUI(data) {
 }
 
 async function liveRefreshPosts() {
-  const data = await apiFetch('/posts', {}, { limit: 50 });
-  if (data?.posts?.length) {
+  const data = await apiFetch('/posts', {}, { entityIds: ENTITY_ID, limit: 50 });
+  if (data && Array.isArray(data.posts)) {
+    // Fully replace state with live Yext data (empty array is valid — clears stale baked posts)
     state.posts = data.posts.map(p => ({
       postId: p.postId,
       publisher: p.publishers?.[0] || p.publisher || 'FIRSTPARTY',
@@ -2195,6 +2198,7 @@ async function liveRefreshPosts() {
       title: p.postTitle || '',
       text: p.text || '',
       photoUrls: p.photoUrls || [],
+      videoUrl: p.videoUrl || null,
       status: p.entityPosts?.[0]?.status?.status || 'POST_SUCCEEDED',
       createDate: p.postDate || p.createdDate || new Date().toISOString(),
       metrics: p.entityPosts?.[0]?.metrics || {}
@@ -2206,7 +2210,8 @@ async function liveRefreshPosts() {
   document.getElementById('statTotalPosts').textContent = count;
   document.getElementById('analyticsPostCount').textContent = count;
   const badge = document.getElementById('postsCountBadge');
-  if (count > 0) { badge.textContent = count; badge.style.display = ''; }
+  badge.textContent = count;
+  badge.style.display = count > 0 ? '' : 'none';
 }
 
 async function liveRefreshEligibility() {
@@ -2530,22 +2535,36 @@ function fakeCommentCount(postId) {
 async function deletePost(postId) {
   if (!confirm('Delete this post? This cannot be undone.')) return;
   try {
-    // POST /v2/accounts/{accountId}/posts/{postId} DELETE via proxy
+    // DELETE via proxy — Yext: DELETE /v2/accounts/{accountId}/posts/{postId}
     const url = `${PROXY_BASE}/api/proxy?path=/v2/accounts/${ACCOUNT_ID}/posts/${postId}&api_key=${API_KEY}&v=${API_VERSION}`;
     const resp = await fetch(url, { method: 'DELETE', signal: AbortSignal.timeout(8000) });
     if (resp.ok) {
-      state.posts = state.posts.filter(p => p.id !== postId);
+      // Successfully deleted in Yext — remove from local state
+      state.posts = state.posts.filter(p => p.postId !== postId);
       renderPostsList();
-      if (typeof renderOverview === 'function') renderOverview();
+      renderOverviewPosts();
+      document.getElementById('statTotalPosts').textContent = state.posts.length;
+      document.getElementById('analyticsPostCount').textContent = state.posts.length;
+      const badge = document.getElementById('postsCountBadge');
+      badge.textContent = state.posts.length;
+      badge.style.display = state.posts.length > 0 ? '' : 'none';
       toast('Post deleted', 'success');
       return;
+    } else {
+      const msg = await resp.text().catch(() => '');
+      console.warn('Delete failed:', resp.status, msg);
+      toast(`⚠️ Delete failed (${resp.status}). Post removed locally.`, 'error');
     }
-  } catch(e) {}
-  // Demo fallback
+  } catch(e) {
+    console.warn('Delete error:', e.message);
+    toast('⚠️ Network error — post removed locally only.', 'error');
+  }
+  // Remove from local state regardless (demo mode)
   state.posts = state.posts.filter(p => p.postId !== postId);
   renderPostsList();
   renderOverviewPosts();
-  toast('Post deleted', 'success');
+  document.getElementById('statTotalPosts').textContent = state.posts.length;
+  document.getElementById('analyticsPostCount').textContent = state.posts.length;
 }
 
 function editPost(postId) {
@@ -2553,13 +2572,31 @@ function editPost(postId) {
   if (!post) return;
   openCompose();
   setTimeout(() => {
+    // Populate text
     const ta = document.getElementById('postTextInput');
     if (ta) { ta.value = post.text || ''; updateCharCount(); }
+
+    // Populate image URL if present
+    if (post.photoUrls?.length) {
+      const url = post.photoUrls[0];
+      const input = document.getElementById('imgUrlInput');
+      if (input) { input.value = url; previewImageUrl(url); }
+    }
+
+    // Populate video URL if present
+    if (post.videoUrl) {
+      switchMediaTab('video');
+      const vinput = document.getElementById('videoUrlInput');
+      if (vinput) { vinput.value = post.videoUrl; previewVideoUrl(post.videoUrl); }
+    }
+
     // Mark as edit mode
     document.getElementById('composeModal').dataset.editPostId = postId;
     document.querySelector('#composeModal .modal-title').textContent = 'Edit Post';
-    const btn = document.querySelector('#composeModal .btn-primary:last-of-type');
-    if (btn) btn.textContent = 'Save Changes';
+    const publishBtn = document.getElementById('publishBtn');
+    if (publishBtn) publishBtn.innerHTML = '<span class="material-icons">save</span><span id="publishBtnLabel">Save Changes</span>';
+    const allBtn = document.getElementById('publishAllBtn');
+    if (allBtn) allBtn.style.display = 'none'; // hide "publish to all" in edit mode
   }, 100);
 }
 
@@ -2978,6 +3015,13 @@ function closeCompose() {
   // Reset Select All button
   const saBtn = document.getElementById('selectAllBtn');
   if (saBtn) saBtn.innerHTML = '<span class="material-icons" style="font-size:13px">select_all</span>Select All';
+  // Reset compose modal title and button labels
+  const modalTitle = document.querySelector('#composeModal .modal-title');
+  if (modalTitle) modalTitle.textContent = 'New Post';
+  const publishBtn = document.getElementById('publishBtn');
+  if (publishBtn) publishBtn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+  const allBtn = document.getElementById('publishAllBtn');
+  if (allBtn) allBtn.style.display = '';
   delete document.getElementById('composeModal').dataset.editPostId;
 }
 
@@ -3197,13 +3241,22 @@ async function uploadImagesToYext(files) {
 async function publishPost() {
   const text = document.getElementById('postTextInput').value.trim();
   if (!text) { toast('Post text is required', 'error'); return; }
-  if (state.selectedPlatforms.size === 0) { toast('Select at least one platform', 'error'); return; }
+
+  const modal = document.getElementById('composeModal');
+  const editPostId = modal.dataset.editPostId || null;
+  const isEditMode = !!editPostId;
+
+  if (!isEditMode && state.selectedPlatforms.size === 0) {
+    toast('Select at least one platform', 'error'); return;
+  }
 
   const btn = document.getElementById('publishBtn');
   const allBtn = document.getElementById('publishAllBtn');
   btn.disabled = true;
   if (allBtn) allBtn.disabled = true;
-  btn.innerHTML = '<div class="spinner"></div> Publishing...';
+  btn.innerHTML = isEditMode
+    ? '<div class="spinner"></div> Saving...'
+    : '<div class="spinner"></div> Publishing...';
 
   let postDate = null;
   if (state.scheduleMode === 'later') {
@@ -3211,7 +3264,9 @@ async function publishPost() {
     if (!val) {
       toast('Select a schedule date/time', 'error');
       btn.disabled = false; if (allBtn) allBtn.disabled = false;
-      btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+      btn.innerHTML = isEditMode
+        ? '<span class="material-icons">save</span><span id="publishBtnLabel">Save Changes</span>'
+        : '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
       return;
     }
     postDate = new Date(val).toISOString().replace('T', ' ').replace(/\..+/, '') + ' UTC';
@@ -3221,6 +3276,52 @@ async function publishPost() {
   const photoUrls = state.imageUrl ? [state.imageUrl] : [];
   const videoUrl  = state.videoUrl || null;
 
+  if (isEditMode) {
+    // ===== EDIT MODE: PUT /posts/{postId} =====
+    const body = {
+      text,
+      ...(photoUrls.length > 0 ? { photoUrls } : { photoUrls: [] }),
+      ...(videoUrl ? { videoUrl } : {}),
+    };
+    try {
+      const data = await apiWrite(`/posts/${editPostId}`, body, {}, 'PUT');
+      // Update the post in local state in-place
+      const idx = state.posts.findIndex(p => p.postId === editPostId);
+      if (idx !== -1) {
+        state.posts[idx] = { ...state.posts[idx], text, photoUrls, videoUrl };
+      }
+      renderOverviewPosts();
+      renderPostsList();
+      closeCompose();
+      btn.disabled = false;
+      if (allBtn) { allBtn.disabled = false; allBtn.style.display = ''; }
+      btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+      if (data !== null) {
+        toast('✅ Post updated!', 'success');
+        // Refresh from Yext after a short delay to confirm the edit landed
+        setTimeout(liveRefreshPosts, 2000);
+      } else {
+        toast('⚠️ Edit may not have reached Yext — updated locally.', 'error');
+      }
+    } catch(err) {
+      console.warn('Edit failed:', err.message);
+      // Still update locally even if API call failed
+      const idx = state.posts.findIndex(p => p.postId === editPostId);
+      if (idx !== -1) {
+        state.posts[idx] = { ...state.posts[idx], text, photoUrls, videoUrl };
+      }
+      renderOverviewPosts();
+      renderPostsList();
+      closeCompose();
+      btn.disabled = false;
+      if (allBtn) { allBtn.disabled = false; allBtn.style.display = ''; }
+      btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+      toast('⚠️ Could not reach Yext — updated locally only.', 'error');
+    }
+    return;
+  }
+
+  // ===== CREATE MODE: POST /posts for each selected platform =====
   const platforms = Array.from(state.selectedPlatforms);
   let successCount = 0;
   let lastPostId = null;
@@ -3254,6 +3355,8 @@ async function publishPost() {
   if (successCount > 0) {
     const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
     toast(`✅ Post ${label}! It will appear in Social → Posts shortly.`, 'success');
+    // Refresh from Yext after a short delay so the live post replaces the optimistic one
+    setTimeout(liveRefreshPosts, 3000);
   } else {
     toast('⚠️ CORS blocked direct publish. Post shown locally only.', 'error');
   }
