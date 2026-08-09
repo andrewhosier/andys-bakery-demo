@@ -1443,7 +1443,12 @@
 
       <!-- Platform selection -->
       <div class="form-group">
-        <label class="form-label">Publish to</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <label class="form-label" style="margin:0">Publish to</label>
+          <button onclick="selectAllPlatforms()" id="selectAllBtn" style="font-size:11px;padding:3px 10px;border:1.5px solid var(--blue);border-radius:20px;background:transparent;color:var(--blue);cursor:pointer;font-weight:500;display:flex;align-items:center;gap:4px">
+            <span class="material-icons" style="font-size:13px">select_all</span>Select All
+          </button>
+        </div>
         <div class="platform-select" id="platformSelect">
           <div class="platform-toggle firstparty selected" data-platform="FIRSTPARTY" onclick="togglePlatform(this)">
             <span class="ptoggle-logo" id="ptlogo-FIRSTPARTY"></span>First Party
@@ -1527,23 +1532,6 @@
         </div>
       </div>
 
-      <!-- CTA -->
-      <div class="form-group" id="ctaGroup">
-        <label class="form-label">Call to Action (Google)</label>
-        <select class="form-control" id="ctaSelect" style="height:40px">
-          <option value="">None</option>
-          <option value="LEARN_MORE">Learn more</option>
-          <option value="CALL">Call</option>
-          <option value="BOOK">Book</option>
-          <option value="ORDER">Order</option>
-          <option value="SIGN_UP">Sign up</option>
-        </select>
-      </div>
-      <div class="form-group" id="ctaUrlGroup" style="display:none">
-        <label class="form-label">Button URL</label>
-        <input class="form-control" id="ctaUrl" placeholder="https://…" />
-      </div>
-
       <!-- Schedule -->
       <div class="form-group">
         <label class="form-label">Schedule</label>
@@ -1565,6 +1553,9 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeCompose()">Cancel</button>
+      <button class="btn btn-secondary" id="publishAllBtn" onclick="publishToAll()" style="gap:6px">
+        <span class="material-icons" style="font-size:16px">public</span>Publish to All
+      </button>
       <button class="btn btn-primary" id="publishBtn" onclick="publishPost()">
         <span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>
       </button>
@@ -2910,6 +2901,10 @@ function closeCompose() {
       <span class="material-icons">add_photo_alternate</span>Add image
     </div>`;
   updateCharCount();
+  // Reset Select All button
+  const saBtn = document.getElementById('selectAllBtn');
+  if (saBtn) saBtn.innerHTML = '<span class="material-icons" style="font-size:13px">select_all</span>Select All';
+  delete document.getElementById('composeModal').dataset.editPostId;
 }
 
 function togglePlatform(el) {
@@ -2927,7 +2922,6 @@ function togglePlatform(el) {
     `${state.selectedPlatforms.size} platform${state.selectedPlatforms.size !== 1 ? 's' : ''} selected`;
   const hasGoogle = state.selectedPlatforms.has('GOOGLEMYBUSINESS');
   document.getElementById('postTypeGroup').style.display = hasGoogle ? '' : 'none';
-  document.getElementById('ctaGroup').style.display = hasGoogle ? '' : 'none';
 }
 
 function selectPostType(el) {
@@ -2944,9 +2938,6 @@ function selectSchedule(mode) {
   document.getElementById('publishBtnLabel').textContent = mode === 'later' ? 'Schedule' : 'Publish';
 }
 
-document.getElementById('ctaSelect').addEventListener('change', function() {
-  document.getElementById('ctaUrlGroup').style.display = this.value ? '' : 'none';
-});
 
 function updateCharCount() {
   const text = document.getElementById('postTextInput').value;
@@ -3045,6 +3036,78 @@ function generateFallbackPost(prompt) {
   return templates[Math.floor(Math.random() * templates.length)];
 }
 
+// ===== SELECT ALL / PUBLISH TO ALL =====
+const ALL_PLATFORMS = ['FIRSTPARTY','GOOGLEMYBUSINESS','FACEBOOK','INSTAGRAM','TIKTOK','LINKEDIN'];
+
+function selectAllPlatforms() {
+  const allSelected = ALL_PLATFORMS.every(p => state.selectedPlatforms.has(p));
+  if (allSelected) {
+    // Deselect all except FIRSTPARTY
+    state.selectedPlatforms = new Set(['FIRSTPARTY']);
+  } else {
+    state.selectedPlatforms = new Set(ALL_PLATFORMS);
+  }
+  document.querySelectorAll('#platformSelect .platform-toggle').forEach(el => {
+    const p = el.dataset.platform;
+    el.classList.toggle('selected', state.selectedPlatforms.has(p));
+  });
+  updatePlatformOptions();
+  // Update button label
+  const btn = document.getElementById('selectAllBtn');
+  if (btn) {
+    const nowAll = ALL_PLATFORMS.every(p => state.selectedPlatforms.has(p));
+    btn.innerHTML = nowAll
+      ? '<span class="material-icons" style="font-size:13px">deselect</span>Deselect All'
+      : '<span class="material-icons" style="font-size:13px">select_all</span>Select All';
+  }
+}
+
+async function publishToAll() {
+  // Select all platforms then publish
+  state.selectedPlatforms = new Set(ALL_PLATFORMS);
+  document.querySelectorAll('#platformSelect .platform-toggle').forEach(el => {
+    el.classList.add('selected');
+  });
+  updatePlatformOptions();
+  await publishPost();
+}
+
+// ===== IMAGE UPLOAD → YEXT ASSETS =====
+async function uploadImagesToYext(files) {
+  const urls = [];
+  for (const file of files) {
+    try {
+      // Convert file to base64 data URL for proxy transport
+      const dataUrl = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = e => res(e.target.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+      // POST to Yext Assets API via proxy
+      // Yext /assets endpoint accepts multipart; we send JSON with base64 and let proxy handle it
+      const assetBody = {
+        name: file.name.replace(/\.[^.]+$/, ''),
+        type: 'PHOTO',
+        file: dataUrl,          // proxy forwards as multipart assetFile field
+        mimeType: file.type,
+      };
+      const data = await apiWrite('/assets', assetBody);
+      // Response: { asset: { url, thumbnailUrl, ... } }
+      const cdnUrl = data?.asset?.url || data?.response?.asset?.url || data?.url;
+      if (cdnUrl) {
+        urls.push(cdnUrl);
+        console.log('Asset uploaded:', cdnUrl);
+      } else {
+        console.warn('Asset upload returned no URL:', data);
+      }
+    } catch (err) {
+      console.warn('Asset upload failed for', file.name, err.message);
+    }
+  }
+  return urls;
+}
+
 // ===== PUBLISH =====
 async function publishPost() {
   const text = document.getElementById('postTextInput').value.trim();
@@ -3052,18 +3115,36 @@ async function publishPost() {
   if (state.selectedPlatforms.size === 0) { toast('Select at least one platform', 'error'); return; }
 
   const btn = document.getElementById('publishBtn');
+  const allBtn = document.getElementById('publishAllBtn');
   btn.disabled = true;
+  if (allBtn) allBtn.disabled = true;
   btn.innerHTML = '<div class="spinner"></div> Publishing...';
 
   let postDate = null;
   if (state.scheduleMode === 'later') {
     const val = document.getElementById('schedDate').value;
-    if (!val) { toast('Select a schedule date/time', 'error'); btn.disabled = false; btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>'; return; }
+    if (!val) {
+      toast('Select a schedule date/time', 'error');
+      btn.disabled = false; if (allBtn) allBtn.disabled = false;
+      btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+      return;
+    }
     postDate = new Date(val).toISOString().replace('T', ' ').replace(/\..+/, '') + ' UTC';
   }
 
-  const cta = document.getElementById('ctaSelect').value;
-  const ctaUrl = document.getElementById('ctaUrl').value;
+  // Upload any attached images to Yext Assets first
+  let photoUrls = [];
+  if (state.images && state.images.length > 0) {
+    btn.innerHTML = '<div class="spinner"></div> Uploading image…';
+    photoUrls = await uploadImagesToYext(state.images);
+    if (photoUrls.length === 0 && state.images.length > 0) {
+      toast('⚠️ Image upload failed — posting without photo.', 'error');
+    } else if (photoUrls.length > 0) {
+      toast(`📷 Image uploaded (${photoUrls.length})`, 'success');
+    }
+    btn.innerHTML = '<div class="spinner"></div> Publishing...';
+  }
+
   const platforms = Array.from(state.selectedPlatforms);
   let successCount = 0;
   let lastPostId = null;
@@ -3072,47 +3153,42 @@ async function publishPost() {
   for (const publisher of platforms) {
     const body = {
       entityIds: [ENTITY_ID],
-      publisher,   // singular string, not array
+      publisher,
       text,
+      ...(photoUrls.length > 0 && { photoUrls }),
       ...(postDate && { postDate }),
       ...(state.postType !== 'STANDARD' && { topicType: state.postType }),
-      ...(cta && { callToActionType: cta, clickthroughUrl: ctaUrl || undefined }),
     };
     try {
       const data = await apiWrite('/posts', body);
       if (data?.postId) { lastPostId = data.postId; successCount++; }
-      else if (data !== null) { successCount++; } // posted but no postId returned
+      else if (data !== null) { successCount++; }
     } catch (err) {
       console.warn('Post failed for', publisher, err.message);
     }
   }
 
-  addOptimisticPost(text, postDate, platforms[0], lastPostId);
+  addOptimisticPost(text, postDate, platforms[0], lastPostId, photoUrls);
   closeCompose();
   btn.disabled = false;
+  if (allBtn) allBtn.disabled = false;
   btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
 
   if (successCount > 0) {
     const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
     toast(`✅ Post ${label}! It will appear in Social → Posts shortly.`, 'success');
   } else {
-    // CORS blocks direct browser→Yext POST — show actionable message
     toast('⚠️ CORS blocked direct publish. Post shown locally only.', 'error');
-    console.info(
-      '%c Yext Social Posts API requires a server-side call (CORS blocks browser POST).\n' +
-      'To make publish work from the deployed site, a proxy endpoint is needed.\n' +
-      'Contact Andy or add a Yext Pages Function / Vercel edge function as the proxy.',
-      'color: orange'
-    );
   }
 }
 
-function addOptimisticPost(text, postDate, publisher, postId) {
+function addOptimisticPost(text, postDate, publisher, postId, photoUrls = []) {
   const newPost = {
     postId: postId || ('new-' + Date.now()),
     publisher: publisher || Array.from(state.selectedPlatforms)[0] || 'FIRSTPARTY',
     entityId: ENTITY_ID,
     text,
+    photoUrls,
     status: state.scheduleMode === 'later' ? 'POST_SCHEDULED' : 'POST_SUCCEEDED',
     createDate: postDate || new Date().toISOString(),
     metrics: {}
