@@ -1989,10 +1989,22 @@ function buildUrl(path, params = {}) {
 }
 
 async function apiFetch(path, options = {}, params = {}) {
-  const url = apiUrl(`/accounts/${ACCOUNT_ID}${path}`, params);
-  // 4-second timeout so CORS preflight failures don't block the UI
+  // Route through proxy when available — direct calls are CORS-blocked from Pages CDN
+  await checkProxy();
+  let url;
+  if (proxyAvailable) {
+    const u = new URL(`${PROXY_BASE}/api/proxy`);
+    u.searchParams.set('path', `/v2/accounts/${ACCOUNT_ID}${path}`);
+    u.searchParams.set('api_key', API_KEY);
+    u.searchParams.set('v', API_VERSION);
+    Object.entries(params).forEach(([k, v]) => u.searchParams.set(k, v));
+    url = u.toString();
+  } else {
+    // Direct Yext API — works from localhost but CORS-blocked from CDN
+    url = apiUrl(`/accounts/${ACCOUNT_ID}${path}`, params);
+  }
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 4000);
+  const timer = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch(url, {
       ...options,
