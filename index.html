@@ -1514,13 +1514,22 @@
           </div>
         </div>
         <div id="mediaPhotoPanel">
-          <div class="img-preview-wrap" id="imgPreviewWrap">
-            <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
-              <span class="material-icons">add_photo_alternate</span>
-              Add image
-            </div>
+          <!-- URL input row -->
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <input id="imgUrlInput" class="form-control" style="font-size:13px;flex:1"
+              placeholder="Paste image URL (https://…)"
+              oninput="previewImageUrl(this.value)" />
+            <button class="btn btn-secondary btn-sm" onclick="clearImageUrl()" title="Clear image" style="padding:6px 10px">
+              <span class="material-icons" style="font-size:15px">close</span>
+            </button>
           </div>
-          <input type="file" id="imgFileInput" accept="image/*" style="display:none" multiple onchange="previewImages(event)" />
+          <!-- Live preview -->
+          <div id="imgUrlPreview" style="display:none;margin-top:4px;position:relative;width:fit-content">
+            <img id="imgUrlPreviewImg" src="" alt="Preview"
+              style="max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--gray-300);display:block" />
+            <div style="margin-top:4px;font-size:11px;color:var(--gray-500)" id="imgUrlPreviewNote">✓ Image will be included in post</div>
+          </div>
+          <div id="imgUrlError" style="display:none;font-size:11px;color:var(--red);margin-top:4px">⚠ Could not load image — check the URL is publicly accessible</div>
         </div>
         <div id="mediaVideoPanel" style="display:none">
           <div class="img-upload-btn" style="width:100%;justify-content:center" onclick="document.getElementById('videoFileInput').click()">
@@ -1920,6 +1929,7 @@ let state = {
   scheduleMode: 'now',
   postType: 'STANDARD',
   images: [],
+  imageUrl: null,
   loading: false,
   connectPollTimer: null,
 };
@@ -2896,10 +2906,13 @@ function closeCompose() {
   document.getElementById('postTextInput').value = '';
   document.getElementById('aiPromptInput').value = '';
   state.images = [];
-  document.getElementById('imgPreviewWrap').innerHTML = `
-    <div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
-      <span class="material-icons">add_photo_alternate</span>Add image
-    </div>`;
+  state.imageUrl = null;
+  const urlInput = document.getElementById('imgUrlInput');
+  if (urlInput) urlInput.value = '';
+  const urlPreview = document.getElementById('imgUrlPreview');
+  if (urlPreview) urlPreview.style.display = 'none';
+  const urlErr = document.getElementById('imgUrlError');
+  if (urlErr) urlErr.style.display = 'none';
   updateCharCount();
   // Reset Select All button
   const saBtn = document.getElementById('selectAllBtn');
@@ -2948,24 +2961,35 @@ function updateCharCount() {
   el.className = 'char-count' + (len > limit ? ' over' : len > limit * 0.9 ? ' warn' : '');
 }
 
-function previewImages(event) {
-  const files = Array.from(event.target.files);
-  state.images = files;
-  const wrap = document.getElementById('imgPreviewWrap');
-  wrap.innerHTML = '';
-  files.forEach(f => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement('img');
-      img.className = 'img-preview';
-      img.src = e.target.result;
-      wrap.appendChild(img);
-    };
-    reader.readAsDataURL(f);
-  });
-  wrap.innerHTML += `<div class="img-upload-btn" onclick="document.getElementById('imgFileInput').click()">
-    <span class="material-icons">add_photo_alternate</span>Add more
-  </div>`;
+// ===== IMAGE URL PREVIEW =====
+function previewImageUrl(url) {
+  const preview = document.getElementById('imgUrlPreview');
+  const img = document.getElementById('imgUrlPreviewImg');
+  const err = document.getElementById('imgUrlError');
+  if (!url || !url.startsWith('http')) {
+    preview.style.display = 'none';
+    err.style.display = 'none';
+    state.imageUrl = null;
+    return;
+  }
+  img.onload = () => {
+    preview.style.display = '';
+    err.style.display = 'none';
+    state.imageUrl = url;
+  };
+  img.onerror = () => {
+    preview.style.display = 'none';
+    err.style.display = '';
+    state.imageUrl = null;
+  };
+  img.src = url;
+}
+
+function clearImageUrl() {
+  document.getElementById('imgUrlInput').value = '';
+  document.getElementById('imgUrlPreview').style.display = 'none';
+  document.getElementById('imgUrlError').style.display = 'none';
+  state.imageUrl = null;
 }
 
 // ===== AI GENERATE =====
@@ -3132,18 +3156,8 @@ async function publishPost() {
     postDate = new Date(val).toISOString().replace('T', ' ').replace(/\..+/, '') + ' UTC';
   }
 
-  // Upload any attached images to Yext Assets first
-  let photoUrls = [];
-  if (state.images && state.images.length > 0) {
-    btn.innerHTML = '<div class="spinner"></div> Uploading image…';
-    photoUrls = await uploadImagesToYext(state.images);
-    if (photoUrls.length === 0 && state.images.length > 0) {
-      toast('⚠️ Image upload failed — posting without photo.', 'error');
-    } else if (photoUrls.length > 0) {
-      toast(`📷 Image uploaded (${photoUrls.length})`, 'success');
-    }
-    btn.innerHTML = '<div class="spinner"></div> Publishing...';
-  }
+  // Use the image URL directly — no upload needed, Yext photoUrls takes a public URL
+  const photoUrls = state.imageUrl ? [state.imageUrl] : [];
 
   const platforms = Array.from(state.selectedPlatforms);
   let successCount = 0;
