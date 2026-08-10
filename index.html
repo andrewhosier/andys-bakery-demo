@@ -3342,8 +3342,9 @@ async function publishPost() {
       btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
       return;
     }
-    // Yext Social Posts API: ISO 8601 without milliseconds, e.g. "2026-08-19T14:30:00Z"
-    postDate = d.toISOString().slice(0, 19) + 'Z';
+    // Yext requires exactly: "YYYY-MM-DD HH:MM:SS" (no timezone suffix)
+    const pad = n => String(n).padStart(2, '0');
+    postDate = `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
   }
 
   // Use URLs directly — Yext photoUrls / videoUrl take public URLs
