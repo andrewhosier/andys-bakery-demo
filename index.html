@@ -1552,7 +1552,7 @@
 
       <!-- Schedule -->
       <div class="form-group">
-        <label class="form-label">Schedule</label>
+        <label class="form-label">When to publish</label>
         <div class="schedule-options">
           <label class="radio-btn selected" id="schedNow" onclick="selectSchedule('now')">
             <input type="radio" name="schedule" value="now" checked />
@@ -1560,11 +1560,23 @@
           </label>
           <label class="radio-btn" id="schedLater" onclick="selectSchedule('later')">
             <input type="radio" name="schedule" value="later" />
-            <span class="material-icons" style="font-size:16px">schedule</span>Schedule
+            <span class="material-icons" style="font-size:16px">calendar_today</span>Schedule for later
           </label>
         </div>
-        <div id="schedDateWrap" style="display:none">
-          <input class="form-control" type="datetime-local" id="schedDate" />
+        <div id="schedDateWrap" style="display:none;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px;background:var(--blue-light);border:1px solid #c5d8fb;border-radius:8px;padding:10px 12px">
+            <span class="material-icons" style="color:var(--blue);font-size:18px;flex-shrink:0">event</span>
+            <div style="flex:1">
+              <div style="font-size:11px;color:var(--blue);font-weight:500;margin-bottom:4px">Scheduled publish time</div>
+              <input class="form-control" type="datetime-local" id="schedDate"
+                style="background:transparent;border:none;padding:0;font-size:13px;color:var(--gray-900);font-weight:500"
+                onchange="updateSchedLabel()" />
+            </div>
+          </div>
+          <div id="schedLabel" style="margin-top:6px;font-size:12px;color:var(--gray-600);display:none">
+            <span class="material-icons" style="font-size:13px;vertical-align:middle">info_outline</span>
+            Post will be sent via Yext at <strong id="schedLabelText"></strong>
+          </div>
         </div>
       </div>
 
@@ -2322,6 +2334,7 @@ function renderOverviewPosts() {
 
 function renderPostItem(post) {
   const cfg = PLATFORMS[post.publisher] || {};
+  const isScheduled = post.status === 'POST_SCHEDULED';
   const statusMap = {
     POST_SUCCEEDED: '<span class="chip chip-success" style="font-size:11px"><span class="dot"></span>Published</span>',
     POST_SCHEDULED: '<span class="chip chip-warning" style="font-size:11px"><span class="dot"></span>Scheduled</span>',
@@ -2333,21 +2346,31 @@ function renderPostItem(post) {
   const thumb = post.photoUrls?.[0];
   const metrics = post.metrics || {};
   const commentCount = fakeCommentCount(post.postId);
-  return `<div class="post-item" style="position:relative">
+
+  // For scheduled posts show "Scheduled for [date]" instead of a past timestamp
+  const dateLabel = isScheduled
+    ? `<span style="color:var(--yellow);font-weight:500"><span class="material-icons" style="font-size:13px;vertical-align:middle">schedule</span> Scheduled for ${formatDate(post.createDate)}</span>`
+    : formatDate(post.createDate);
+
+  // Scheduled posts get a subtle yellow left border
+  const scheduledBorder = isScheduled ? 'border-left:3px solid var(--yellow);' : '';
+
+  return `<div class="post-item" style="position:relative;${scheduledBorder}">
     <div class="post-platform-icon" style="background:${cfg.bg || '#f0f0f0'};display:flex;align-items:center;justify-content:center">${PLATFORM_LOGOS[post.publisher] || `<span style="font-size:16px">${cfg.emoji||'🌐'}</span>`}</div>
     <div class="post-content">
       <div class="post-meta" style="margin-bottom:4px">
         <span style="font-weight:500;color:var(--gray-800)">${cfg.short || post.publisher}</span>
         <span>•</span>
-        <span>${formatDate(post.createDate)}</span>
+        <span>${dateLabel}</span>
         <span>•</span>${statusHtml}
       </div>
       <div class="post-text">${(post.text || '').substring(0, 220)}${(post.text?.length || 0) > 220 ? '…' : ''}</div>
       <div class="post-stats">
-        ${metrics.impressions !== undefined ? `
+        ${!isScheduled && metrics.impressions !== undefined ? `
         <span class="post-stat"><span class="material-icons">visibility</span>${(metrics.impressions || 0).toLocaleString()} impressions</span>
         <span class="post-stat"><span class="material-icons">mouse</span>${(metrics.clicks || 0).toLocaleString()} clicks</span>` : ''}
-        <span class="post-stat" style="cursor:pointer" onclick="openPostComments('${post.postId}')"><span class="material-icons">chat_bubble_outline</span>${commentCount} comment${commentCount !== 1 ? 's' : ''}</span>
+        ${!isScheduled ? `<span class="post-stat" style="cursor:pointer" onclick="openPostComments('${post.postId}')"><span class="material-icons">chat_bubble_outline</span>${commentCount} comment${commentCount !== 1 ? 's' : ''}</span>` : ''}
+        ${isScheduled ? `<span class="post-stat" style="color:var(--gray-600);font-size:12px"><span class="material-icons" style="font-size:13px">info_outline</span>Will publish automatically via Yext</span>` : ''}
       </div>
     </div>
     ${thumb ? `<img class="post-thumbnail" src="${thumb}" alt="" />` : ''}
@@ -3034,6 +3057,13 @@ function closeCompose() {
   if (publishBtn) publishBtn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
   const allBtn = document.getElementById('publishAllBtn');
   if (allBtn) allBtn.style.display = '';
+  // Reset schedule state
+  state.scheduleMode = 'now';
+  document.getElementById('schedNow')?.classList.add('selected');
+  document.getElementById('schedLater')?.classList.remove('selected');
+  document.getElementById('schedDateWrap').style.display = 'none';
+  document.getElementById('schedDate').value = '';
+  document.getElementById('schedLabel').style.display = 'none';
   delete document.getElementById('composeModal').dataset.editPostId;
 }
 
@@ -3066,6 +3096,29 @@ function selectSchedule(mode) {
   document.getElementById('schedLater').classList.toggle('selected', mode === 'later');
   document.getElementById('schedDateWrap').style.display = mode === 'later' ? '' : 'none';
   document.getElementById('publishBtnLabel').textContent = mode === 'later' ? 'Schedule' : 'Publish';
+  // Set a sensible default date: 1 hour from now, rounded to next half-hour
+  if (mode === 'later') {
+    const input = document.getElementById('schedDate');
+    if (!input.value) {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() >= 30 ? 60 : 30, 0, 0);
+      if (d.getMinutes() === 0) d.setHours(d.getHours() + 1);
+      input.value = d.toISOString().slice(0, 16);
+      updateSchedLabel();
+    }
+  }
+}
+
+function updateSchedLabel() {
+  const input = document.getElementById('schedDate');
+  const label = document.getElementById('schedLabel');
+  const labelText = document.getElementById('schedLabelText');
+  if (!input.value) { label.style.display = 'none'; return; }
+  const d = new Date(input.value);
+  const formatted = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    + ' at ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  labelText.textContent = formatted;
+  label.style.display = '';
 }
 
 
@@ -3281,7 +3334,7 @@ async function publishPost() {
         : '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
       return;
     }
-    postDate = new Date(val).toISOString().replace('T', ' ').replace(/\..+/, '') + ' UTC';
+    postDate = new Date(val).toISOString(); // ISO 8601 e.g. "2026-08-19T14:46:00.000Z"
   }
 
   // Use URLs directly — Yext photoUrls / videoUrl take public URLs
