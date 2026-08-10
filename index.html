@@ -3061,6 +3061,9 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ===== COMPOSE =====
 function openCompose() {
+  // Reset platform selection every time modal opens — nothing pre-selected
+  state.selectedPlatforms = new Set();
+  updatePlatformToggles();
   document.getElementById('composeModal').classList.add('open');
   document.getElementById('aiPromptInput').focus();
   updateCharCount();
@@ -3097,6 +3100,9 @@ function closeCompose() {
   if (publishBtn) publishBtn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
   const allBtn = document.getElementById('publishAllBtn');
   if (allBtn) allBtn.style.display = '';
+  // Reset platform selection
+  state.selectedPlatforms = new Set();
+  updatePlatformToggles();
   // Reset schedule state
   state.scheduleMode = 'now';
   document.getElementById('schedNow')?.classList.add('selected');
@@ -3111,7 +3117,6 @@ function togglePlatform(el) {
   if (el.classList.contains('disabled')) { toast('Connect this platform first', 'error'); return; }
   const pub = el.dataset.platform;
   if (state.selectedPlatforms.has(pub)) {
-    if (state.selectedPlatforms.size === 1) return;
     state.selectedPlatforms.delete(pub);
     el.classList.remove('selected');
   } else {
