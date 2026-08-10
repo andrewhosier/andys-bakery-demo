@@ -1532,48 +1532,15 @@
           <div id="imgUrlError" style="display:none;font-size:11px;color:var(--red);margin-top:4px">⚠ Could not load image — check the URL is publicly accessible</div>
         </div>
         <div id="mediaVideoPanel" style="display:none">
-
-          <!-- ===== FILE UPLOAD (Instagram & Facebook) ===== -->
-          <input type="file" id="videoFileInput" accept="video/mp4,video/quicktime,.mp4,.mov" style="display:none" onchange="handleVideoFileSelect(this)">
-          <div id="videoFileDropZone"
-            onclick="document.getElementById('videoFileInput').click()"
-            style="border:2px dashed var(--gray-400);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s"
-            onmouseenter="this.style.borderColor='var(--blue)';this.style.background='var(--blue-light)'"
-            onmouseleave="this.style.borderColor='var(--gray-400)';this.style.background=''">
-            <span class="material-icons" style="font-size:28px;color:var(--gray-500)">cloud_upload</span>
-            <div style="font-size:13px;font-weight:500;color:var(--gray-800);margin:4px 0">Upload video</div>
-            <div style="font-size:11px;color:var(--gray-500)">Instagram & Facebook · MP4 or MOV · Max 100MB</div>
+          <!-- Hint -->
+          <div style="font-size:11px;color:var(--gray-500);margin-bottom:8px">
+            <span class="material-icons" style="font-size:13px;vertical-align:middle">info</span>
+            Paste a video URL — YouTube, Vimeo, Google Drive share link, or direct MP4
           </div>
-          <!-- File selected preview -->
-          <div id="videoFilePreview" style="display:none;margin-top:8px;background:var(--gray-100);border-radius:8px;padding:10px 12px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-              <span class="material-icons" style="color:var(--blue);flex-shrink:0">video_file</span>
-              <div style="flex:1;min-width:0">
-                <div id="videoFileName" style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--gray-900)"></div>
-                <div id="videoFileSize" style="font-size:11px;color:var(--gray-600)"></div>
-              </div>
-              <button class="btn btn-secondary btn-sm" onclick="clearVideoFile()" style="padding:4px 8px;flex-shrink:0">
-                <span class="material-icons" style="font-size:14px">close</span>
-              </button>
-            </div>
-            <video id="videoFilePreviewEl" controls muted style="width:100%;max-height:200px;border-radius:6px;background:#000;display:block"></video>
-            <div style="margin-top:6px;font-size:11px;color:var(--green)">
-              <span class="material-icons" style="font-size:13px;vertical-align:middle">check_circle</span>
-              Video will be uploaded to Yext and posted to Instagram & Facebook
-            </div>
-          </div>
-
-          <!-- Divider -->
-          <div style="display:flex;align-items:center;gap:8px;margin:12px 0">
-            <div style="flex:1;height:1px;background:var(--gray-300)"></div>
-            <span style="font-size:11px;color:var(--gray-500);white-space:nowrap">or use a URL instead</span>
-            <div style="flex:1;height:1px;background:var(--gray-300)"></div>
-          </div>
-
-          <!-- ===== URL INPUT (YouTube, Vimeo, MP4 link) ===== -->
+          <!-- ===== URL INPUT ===== -->
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <input id="videoUrlInput" class="form-control" style="font-size:13px;flex:1"
-              placeholder="Paste video URL (YouTube, Vimeo, or direct MP4)"
+              placeholder="e.g. https://drive.google.com/file/d/…/view"
               oninput="previewVideoUrl(this.value)" />
             <button class="btn btn-secondary btn-sm" onclick="clearVideoUrl()" title="Clear video" style="padding:6px 10px">
               <span class="material-icons" style="font-size:15px">close</span>
@@ -1582,9 +1549,9 @@
           <!-- Live preview -->
           <div id="videoUrlPreview" style="display:none;margin-top:4px">
             <div id="videoUrlEmbed" style="width:100%;border-radius:8px;overflow:hidden;background:#000;line-height:0"></div>
-            <div style="margin-top:4px;font-size:11px;color:var(--gray-500)">✓ Video will be included in post via <code style="font-size:10px">videoUrl</code></div>
+            <div style="margin-top:4px;font-size:11px;color:var(--gray-500)" id="videoUrlNote">✓ Video will be included in post</div>
           </div>
-          <div id="videoUrlError" style="display:none;font-size:11px;color:var(--red);margin-top:4px">⚠ Unrecognised video URL — use YouTube, Vimeo, or a direct .mp4 link</div>
+          <div id="videoUrlError" style="display:none;font-size:11px;color:var(--red);margin-top:4px">⚠ Unrecognised video URL — use YouTube, Vimeo, Google Drive, or a direct .mp4 link</div>
         </div>
       </div>
 
@@ -1990,7 +1957,6 @@ let state = {
   images: [],
   imageUrl: null,
   videoUrl: null,
-  videoFile: null,
   loading: false,
   connectPollTimer: null,
 };
@@ -2691,10 +2657,22 @@ function getVimeoId(url) {
   return m ? m[1] : null;
 }
 
+function getGoogleDriveDirectUrl(url) {
+  // Convert Google Drive share links to direct/embed URLs
+  // Pattern: https://drive.google.com/file/d/FILE_ID/view
+  const match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) return { fileId: match[1], direct: `https://drive.google.com/uc?export=download&id=${match[1]}`, embed: `https://drive.google.com/file/d/${match[1]}/preview` };
+  // Pattern: https://drive.google.com/open?id=FILE_ID
+  const match2 = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+  if (match2) return { fileId: match2[1], direct: `https://drive.google.com/uc?export=download&id=${match2[1]}`, embed: `https://drive.google.com/file/d/${match2[1]}/preview` };
+  return null;
+}
+
 function previewVideoUrl(url) {
   const preview = document.getElementById('videoUrlPreview');
   const embed  = document.getElementById('videoUrlEmbed');
   const err    = document.getElementById('videoUrlError');
+  const note   = document.getElementById('videoUrlNote');
   preview.style.display = 'none';
   err.style.display = 'none';
   state.videoUrl = null;
@@ -2704,19 +2682,29 @@ function previewVideoUrl(url) {
   const ytId = getYouTubeId(url);
   const vimeoId = getVimeoId(url);
   const isMp4 = /\.(mp4|mov|webm)(\?|$)/i.test(url);
+  const gdrive = getGoogleDriveDirectUrl(url);
 
   if (ytId) {
     embed.innerHTML = `<iframe width="100%" height="220" src="https://www.youtube.com/embed/${ytId}" frameborder="0" allowfullscreen style="display:block;border-radius:8px"></iframe>`;
     preview.style.display = '';
     state.videoUrl = url;
+    if (note) note.textContent = '✓ YouTube video will be included in post';
   } else if (vimeoId) {
     embed.innerHTML = `<iframe width="100%" height="220" src="https://player.vimeo.com/video/${vimeoId}" frameborder="0" allowfullscreen style="display:block;border-radius:8px"></iframe>`;
     preview.style.display = '';
     state.videoUrl = url;
+    if (note) note.textContent = '✓ Vimeo video will be included in post';
+  } else if (gdrive) {
+    // Show embedded preview; store the direct download URL for Yext
+    embed.innerHTML = `<iframe width="100%" height="220" src="${gdrive.embed}" frameborder="0" allowfullscreen style="display:block;border-radius:8px;border:none"></iframe>`;
+    preview.style.display = '';
+    state.videoUrl = gdrive.direct; // Use direct URL for Yext API
+    if (note) note.textContent = '✓ Google Drive video detected — using direct link for post';
   } else if (isMp4) {
     embed.innerHTML = `<video controls style="width:100%;max-height:220px;border-radius:8px;display:block" src="${url}"></video>`;
     preview.style.display = '';
     state.videoUrl = url;
+    if (note) note.textContent = '✓ Video will be included in post';
   } else {
     err.style.display = '';
   }
@@ -2730,89 +2718,6 @@ function clearVideoUrl() {
   state.videoUrl = null;
 }
 
-// ===== VIDEO FILE UPLOAD =====
-function handleVideoFileSelect(input) {
-  const file = input.files?.[0];
-  if (!file) return;
-
-  // Validate size (100 MB limit)
-  const MAX_MB = 100;
-  if (file.size > MAX_MB * 1024 * 1024) {
-    toast(`Video must be under ${MAX_MB} MB`, 'error');
-    input.value = '';
-    return;
-  }
-
-  // Validate type
-  const ok = /^video\/(mp4|quicktime|x-m4v|mpeg|webm)$/i.test(file.type) || /\.(mp4|mov|m4v)$/i.test(file.name);
-  if (!ok) {
-    toast('Please upload an MP4 or MOV file', 'error');
-    input.value = '';
-    return;
-  }
-
-  state.videoFile = file;
-
-  // Show preview
-  const dropZone = document.getElementById('videoFileDropZone');
-  const preview  = document.getElementById('videoFilePreview');
-  const nameEl   = document.getElementById('videoFileName');
-  const sizeEl   = document.getElementById('videoFileSize');
-  const videoEl  = document.getElementById('videoFilePreviewEl');
-
-  nameEl.textContent = file.name;
-  sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
-  videoEl.src = URL.createObjectURL(file);
-  dropZone.style.display = 'none';
-  preview.style.display = '';
-
-  // Clear URL input since we're using a file
-  document.getElementById('videoUrlInput').value = '';
-  document.getElementById('videoUrlPreview').style.display = 'none';
-  document.getElementById('videoUrlEmbed').innerHTML = '';
-  state.videoUrl = null;
-}
-
-function clearVideoFile() {
-  state.videoFile = null;
-  const input   = document.getElementById('videoFileInput');
-  const preview = document.getElementById('videoFilePreview');
-  const dropZone = document.getElementById('videoFileDropZone');
-  const videoEl  = document.getElementById('videoFilePreviewEl');
-  if (input) input.value = '';
-  if (videoEl) { URL.revokeObjectURL(videoEl.src); videoEl.src = ''; }
-  if (preview)  preview.style.display = 'none';
-  if (dropZone) dropZone.style.display = '';
-}
-
-async function uploadVideoToYext(file) {
-  // POST multipart to /v2/accounts/{id}/socialMedia/uploadVideo via proxy
-  const proxyUrl = `${PROXY_BASE}/api/proxy-upload?path=/v2/accounts/${ACCOUNT_ID}/socialMedia/uploadVideo&api_key=${API_KEY}&v=${API_VERSION}`;
-
-  const formData = new FormData();
-  formData.append('video', file, file.name);
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 120000); // 2-min timeout for upload
-  try {
-    const resp = await fetch(proxyUrl, {
-      method: 'POST',
-      body: formData,
-      signal: controller.signal,
-      // Do NOT set Content-Type — browser sets multipart boundary automatically
-    });
-    clearTimeout(timer);
-    const data = await resp.json();
-    if (data.meta?.errors?.length) throw new Error(data.meta.errors[0].message);
-    // Yext returns { response: { url: "..." } }
-    const url = data.response?.url || data.response?.videoUrl;
-    if (!url) throw new Error('No video URL returned from Yext upload');
-    return url;
-  } catch (e) {
-    clearTimeout(timer);
-    throw e;
-  }
-}
 
 function renderPlatformGrid() {
   const el = document.getElementById('platformGrid');
@@ -3153,7 +3058,6 @@ function closeCompose() {
   state.images = [];
   state.imageUrl = null;
   state.videoUrl = null;
-  clearVideoFile();
   const urlInput = document.getElementById('imgUrlInput');
   if (urlInput) urlInput.value = '';
   const urlPreview = document.getElementById('imgUrlPreview');
@@ -3466,27 +3370,6 @@ async function publishPost() {
     // Yext requires exactly: "YYYY-MM-DD HH:MM:SS" (no timezone suffix)
     const pad = n => String(n).padStart(2, '0');
     postDate = `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
-  }
-
-  // If the user selected a video file, upload it to Yext first
-  if (state.videoFile) {
-    btn.innerHTML = '<div class="spinner"></div> Uploading video...';
-    try {
-      const uploadedUrl = await uploadVideoToYext(state.videoFile);
-      state.videoUrl = uploadedUrl;
-    } catch (e) {
-      console.warn('Video upload failed:', e.message);
-      toast(`⚠️ Video upload failed: ${e.message}`, 'error', 7000);
-      btn.disabled = false;
-      if (allBtn) allBtn.disabled = false;
-      btn.innerHTML = isEditMode
-        ? '<span class="material-icons">save</span><span id="publishBtnLabel">Save Changes</span>'
-        : '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
-      return;
-    }
-    btn.innerHTML = isEditMode
-      ? '<div class="spinner"></div> Saving...'
-      : '<div class="spinner"></div> Publishing...';
   }
 
   // Use URLs directly — Yext photoUrls / videoUrl take public URLs
