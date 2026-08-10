@@ -2851,11 +2851,9 @@ function renderPlatformGrid() {
 function updatePlatformToggles() {
   document.querySelectorAll('.platform-toggle').forEach(el => {
     const pub = el.dataset.platform;
-    const elig = state.eligibility[pub];
-    // FIRSTPARTY is always available — never disable it
-    const connected = pub === 'FIRSTPARTY' || elig?.status === 'ELIGIBLE';
-    el.classList.toggle('disabled', !connected);
-    el.title = connected ? '' : 'Platform not connected — go to Platforms to connect';
+    // All platforms are always selectable in demo mode
+    el.classList.remove('disabled');
+    el.title = '';
     el.classList.toggle('selected', state.selectedPlatforms.has(pub));
     // Inject SVG logo into the .ptoggle-logo span
     const logoSpan = el.querySelector('.ptoggle-logo');
@@ -3298,8 +3296,7 @@ async function generatePost() {
   updateCharCount();
 
   try {
-    const publishers = Array.from(state.selectedPlatforms).filter(p => state.eligibility[p]?.status === 'ELIGIBLE');
-    const publisherList = publishers.length > 0 ? publishers : Array.from(state.selectedPlatforms);
+    const publisherList = Array.from(state.selectedPlatforms);
 
     const body = {
       textPrompt: prompt,
