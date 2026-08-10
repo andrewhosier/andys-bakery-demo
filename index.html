@@ -2710,6 +2710,20 @@ function previewVideoUrl(url) {
   }
 }
 
+// Upload a video URL to Yext CDN before posting to Instagram/Facebook.
+// Yext requires: POST /social/video → returns a Yext CDN videoUrl for use in post creation.
+async function uploadVideoToYext(videoUrl, publisher) {
+  const body = {
+    publisher,
+    videoUrl,
+    videoPostType: publisher === 'INSTAGRAM' ? 'REEL' : 'VIDEO',
+    uploadType: 'URL',
+  };
+  const data = await apiWrite('/social/video', body);
+  if (!data?.videoUrl) throw new Error('No CDN URL returned from Yext video upload');
+  return data.videoUrl;
+}
+
 function clearVideoUrl() {
   document.getElementById('videoUrlInput').value = '';
   document.getElementById('videoUrlPreview').style.display = 'none';
@@ -3429,12 +3443,27 @@ async function publishPost() {
 
   // Post to each selected platform one at a time (Yext API takes publisher as singular string)
   for (const publisher of platforms) {
+    let finalVideoUrl = videoUrl;
+
+    // Instagram & Facebook require video to be uploaded to Yext CDN first
+    if (videoUrl && (publisher === 'INSTAGRAM' || publisher === 'FACEBOOK')) {
+      try {
+        btn.innerHTML = `<div class="spinner"></div> Uploading video to Yext…`;
+        finalVideoUrl = await uploadVideoToYext(videoUrl, publisher);
+        btn.innerHTML = `<div class="spinner"></div> Publishing…`;
+      } catch (e) {
+        console.warn('Video CDN upload failed for', publisher, e.message);
+        lastError = `Video upload failed: ${e.message}`;
+        continue; // skip posting to this platform
+      }
+    }
+
     const body = {
       entityIds: [ENTITY_ID],
       publisher,
       text,
       ...(photoUrls.length > 0 && { photoUrls }),
-      ...(videoUrl && { videoUrl }),
+      ...(finalVideoUrl && { videoUrl: finalVideoUrl }),
       ...(postDate && { postDate }),
       ...(state.postType !== 'STANDARD' && { topicType: state.postType }),
     };
