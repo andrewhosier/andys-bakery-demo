@@ -3334,7 +3334,17 @@ async function publishPost() {
         : '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
       return;
     }
-    postDate = new Date(val).toISOString(); // ISO 8601 e.g. "2026-08-19T14:46:00.000Z"
+    const d = new Date(val);
+    const minTime = new Date(Date.now() + 5 * 60 * 1000); // must be at least 5 mins in future
+    if (d < minTime) {
+      toast('Schedule time must be at least 5 minutes in the future', 'error');
+      btn.disabled = false; if (allBtn) allBtn.disabled = false;
+      btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
+      return;
+    }
+    // Yext Social Posts API expects "YYYY-MM-DD HH:MM:SS UTC" (space-separated, not ISO T)
+    const pad = n => String(n).padStart(2, '0');
+    postDate = `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:00 UTC`;
   }
 
   // Use URLs directly — Yext photoUrls / videoUrl take public URLs
@@ -3390,6 +3400,7 @@ async function publishPost() {
   const platforms = Array.from(state.selectedPlatforms);
   let successCount = 0;
   let lastPostId = null;
+  let lastError = null;
 
   // Post to each selected platform one at a time (Yext API takes publisher as singular string)
   for (const publisher of platforms) {
@@ -3408,9 +3419,11 @@ async function publishPost() {
       else if (data !== null) { successCount++; }
     } catch (err) {
       console.warn('Post failed for', publisher, err.message);
+      lastError = err.message;
     }
   }
 
+  const wasScheduled = state.scheduleMode === 'later'; // capture before closeCompose resets it
   addOptimisticPost(text, postDate, platforms[0], lastPostId, photoUrls);
   closeCompose();
   btn.disabled = false;
@@ -3418,12 +3431,15 @@ async function publishPost() {
   btn.innerHTML = '<span class="material-icons">send</span><span id="publishBtnLabel">Publish</span>';
 
   if (successCount > 0) {
-    const label = state.scheduleMode === 'later' ? 'scheduled' : 'published';
+    const label = wasScheduled ? 'scheduled' : 'published';
     toast(`✅ Post ${label}! It will appear in Social → Posts shortly.`, 'success');
     // Refresh from Yext after a short delay so the live post replaces the optimistic one
     setTimeout(liveRefreshPosts, 3000);
+  } else if (lastError) {
+    // Show the actual Yext API error so it's clear what went wrong
+    toast(`⚠️ Yext error: ${lastError}`, 'error', 6000);
   } else {
-    toast('⚠️ CORS blocked direct publish. Post shown locally only.', 'error');
+    toast('⚠️ Could not reach Yext — post shown locally only.', 'error');
   }
 }
 
