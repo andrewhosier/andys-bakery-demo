@@ -2658,14 +2658,26 @@ function getVimeoId(url) {
 }
 
 function getGoogleDriveDirectUrl(url) {
-  // Convert Google Drive share links to direct/embed URLs
-  // Pattern: https://drive.google.com/file/d/FILE_ID/view
-  const match = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (match) return { fileId: match[1], direct: `https://drive.google.com/uc?export=download&id=${match[1]}`, embed: `https://drive.google.com/file/d/${match[1]}/preview` };
-  // Pattern: https://drive.google.com/open?id=FILE_ID
-  const match2 = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-  if (match2) return { fileId: match2[1], direct: `https://drive.google.com/uc?export=download&id=${match2[1]}`, embed: `https://drive.google.com/file/d/${match2[1]}/preview` };
-  return null;
+  // Convert Google Drive share links to direct download URLs.
+  // Uses drive.usercontent.google.com with confirm=t to bypass virus-scan warning pages
+  // that Google shows for larger files — without this, Yext gets an HTML page, not the video.
+  const extractId = u => {
+    const m1 = u.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (m1) return m1[1];
+    const m2 = u.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+    if (m2) return m2[1];
+    const m3 = u.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (m3) return m3[1];
+    return null;
+  };
+  const fileId = extractId(url);
+  if (!fileId) return null;
+  return {
+    fileId,
+    // usercontent domain + confirm=t bypasses the HTML warning page for large files
+    direct: `https://drive.usercontent.google.com/download?id=${fileId}&export=download&authuser=0&confirm=t`,
+    embed:  `https://drive.google.com/file/d/${fileId}/preview`,
+  };
 }
 
 function previewVideoUrl(url) {
