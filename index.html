@@ -3478,9 +3478,11 @@ async function publishPost() {
       publisher,
       text,
       ...(photoUrls.length > 0 && { photoUrls }),
-      ...(finalVideoUrl && { videoUrl: finalVideoUrl }),
-      ...(finalVideoUrl && (publisher === 'INSTAGRAM' || publisher === 'FACEBOOK') && {
-        videoPostType: publisher === 'INSTAGRAM' ? 'REEL' : 'VIDEO',
+      ...(finalVideoUrl && {
+        videos: [{
+          videoUrl: finalVideoUrl,
+          videoPostType: publisher === 'INSTAGRAM' ? 'REEL' : 'VIDEO',
+        }],
       }),
       ...(postDate && { postDate }),
       ...(state.postType !== 'STANDARD' && { topicType: state.postType }),
